@@ -513,10 +513,10 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, lab
         roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//2,
                                         center=center)
     except ValueError:  # this occurs with degradation_yoy(multi_yoy=True). resample to daily mean
-        warnings.warn("Input `yoy_info['YoY_values']` appears to have multiple "
-                       "annual slopes per day, which is the case if degradation_yoy(multi_yoy=True). "
-                       "Proceeding to plot with a daily mean which will average out the time-series trend.  "
-                       "Recommend re-running with degradation_yoy(multi_yoy=False).")
+        warnings.warn("Input `yoy_info['YoY_values']` appears to have multiple annual "
+                      "slopes per day, which is the case if degradation_yoy(multi_yoy=True). "
+                      "Proceeding to plot with a daily mean which will average out the time-series"
+                      " trend. Recommend re-running with degradation_yoy(multi_yoy=False).")
         roller = results_values.resample('D').mean().rolling(f'{rolling_days}d',
                                                              min_periods=rolling_days//2,
                                                              center=center)
