@@ -8,7 +8,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from rdtools import normalization, filtering, aggregation, degradation
-from rdtools import clearsky_temperature, plotting
+from rdtools import clearsky_temperature, plotting, utilities
 import warnings
 
 
@@ -155,8 +155,28 @@ class TrendAnalysis:
         self.max_timedelta = max_timedelta
         self.results = {}
 
-        # Initialize to use default filter parameters
-        self.filter_params = {
+        # Define valid filter parameters
+        self.valid_filter_params = [
+            "normalized_filter",
+            "poa_filter",
+            "tcell_filter",
+            "clip_filter",
+            "hour_angle_filter",
+            "clearsky_filter",
+            "sensor_clearsky_filter",
+            "ad_hoc_filter",
+        ]
+
+        self.valid_filter_params_aggregated = [
+            "two_way_window_filter",
+            "insolation_filter",
+            "hampel_filter",
+            "directional_tukey_filter",
+            "ad_hoc_filter",
+        ]
+
+        # Define default filter parameters
+        self.default_filter_params = {
             "normalized_filter": {},
             "poa_filter": {},
             "tcell_filter": {},
@@ -164,13 +184,50 @@ class TrendAnalysis:
             "clearsky_filter": {},
             "ad_hoc_filter": None,  # use this to include an explict filter
         }
-        self.filter_params_aggregated = {
+
+        self.default_filter_params_aggregated = {
             "two_way_window_filter": {},
-            "ad_hoc_filter": None
+            "ad_hoc_filter": None,
         }
+
+        # Initialize to use default filter parameters
+        self._filter_params = ValidatedFilterDict(
+            self.valid_filter_params, self.default_filter_params
+        )
+        self._filter_params_aggregated = ValidatedFilterDict(
+            self.valid_filter_params_aggregated, self.default_filter_params_aggregated
+        )
         # remove tcell_filter from list if power_expected is passed in
         if power_expected is not None and temperature_cell is None:
             del self.filter_params["tcell_filter"]
+
+    @property
+    def filter_params(self):
+        return self._filter_params
+
+    @filter_params.setter
+    def filter_params(self, new_filter_params):
+        if not isinstance(new_filter_params, dict):
+            raise ValueError("Attribute `filter_params` must be a dictionary.")
+
+        # If dictionary passed, check the new filter_params and set new filters.
+        self._filter_params = ValidatedFilterDict(self.valid_filter_params, new_filter_params)
+        print(f"Attribute `filter_params` changed to: {new_filter_params}")
+
+    @property
+    def filter_params_aggregated(self):
+        return self._filter_params_aggregated
+
+    @filter_params_aggregated.setter
+    def filter_params_aggregated(self, new_filter_params_aggregated):
+        if not (isinstance(new_filter_params_aggregated, dict) or None):
+            raise ValueError("Attribute `filter_params_aggregated` must be a dictionary.")
+
+        # If dictionary passed, check the new filter_params and set new filters.
+        self._filter_params_aggregated = ValidatedFilterDict(
+            self.valid_filter_params_aggregated, new_filter_params_aggregated
+        )
+        print(f"Attribute `filter_params_aggregated` changed to: {new_filter_params_aggregated}")
 
     def set_clearsky(
         self,
@@ -417,8 +474,8 @@ class TrendAnalysis:
 
         if self.gamma_pdc is None:
             warnings.warn(
-                "Temperature coefficient not passed in to TrendAnalysis"
-                ". No temperature correction will be conducted."
+                "Temperature coefficient not passed in to TrendAnalysis. "
+                "No temperature correction will be conducted."
             )
         pvwatts_kws = {
             "poa_global": poa_global,
@@ -436,8 +493,9 @@ class TrendAnalysis:
         if renorm:
             # Normalize to the 95th percentile for convenience, this is renormalized out
             # in the calculations but is relevant to normalized_filter()
-            x = energy_normalized[np.isfinite(energy_normalized)]
-            energy_normalized = energy_normalized / x.quantile(0.95)
+            q = utilities.robust_quantile(energy_normalized[np.isfinite(energy_normalized)], 0.95)
+
+            energy_normalized = energy_normalized / q
 
         return energy_normalized, insolation
 
@@ -561,7 +619,7 @@ class TrendAnalysis:
                 warnings.warn(
                     "ad_hoc_filter contains NaN values; setting to False (excluding)"
                 )
-                ad_hoc_filter = ad_hoc_filter.fillna(False)
+                ad_hoc_filter.loc[ad_hoc_filter.isnull()] = False
 
             if not filter_components.index.equals(ad_hoc_filter.index):
                 warnings.warn(
@@ -569,9 +627,8 @@ class TrendAnalysis:
                     "values will be set to True (kept). Align the index with the index "
                     "of the filter_components attribute to prevent this warning"
                 )
-                ad_hoc_filter = ad_hoc_filter.reindex(filter_components.index).fillna(
-                    True
-                )
+                ad_hoc_filter = ad_hoc_filter.reindex(filter_components.index)
+                ad_hoc_filter.loc[ad_hoc_filter.isnull()] = True
 
             filter_components["ad_hoc_filter"] = ad_hoc_filter
 
@@ -652,7 +709,7 @@ class TrendAnalysis:
                 warnings.warn(
                     "aggregated ad_hoc_filter contains NaN values; setting to False (excluding)"
                 )
-                ad_hoc_filter_aggregated = ad_hoc_filter_aggregated.fillna(False)
+                ad_hoc_filter_aggregated.loc[ad_hoc_filter_aggregated.isnull()] = False
 
             if not filter_components_aggregated.index.equals(
                 ad_hoc_filter_aggregated.index
@@ -665,7 +722,8 @@ class TrendAnalysis:
                 )
                 ad_hoc_filter_aggregated = ad_hoc_filter_aggregated.reindex(
                     filter_components_aggregated.index
-                ).fillna(True)
+                )
+                ad_hoc_filter_aggregated.loc[ad_hoc_filter_aggregated.isnull()] = True
 
             filter_components_aggregated["ad_hoc_filter"] = ad_hoc_filter_aggregated
 
@@ -899,6 +957,12 @@ class TrendAnalysis:
                 self.poa_global_clearsky,
                 pv_input="energy",
             )
+            warnings.warn(
+                """Clear-sky analysis is performed but `power_expected` was passed in by user.
+                   In this case, the power normalization is not tied to the modeled clear-sky
+                   irradiance and the clear-sky workflow may provide similar results to
+                   the sensor workflow."""
+            )
         self._filter(cs_normalized, "clearsky")
         cs_aggregated, cs_aggregated_insolation = self._aggregate(
             cs_normalized[self.clearsky_filter], cs_insolation[self.clearsky_filter]
@@ -949,7 +1013,6 @@ class TrendAnalysis:
         -------
         None
         """
-
         self._sensor_preprocess()
         sensor_results = {}
 
@@ -1205,3 +1268,30 @@ class TrendAnalysis:
 
         fig = plotting.degradation_timeseries_plot(yoy_info, rolling_days, **kwargs)
         return fig
+
+
+class ValidatedFilterDict(dict):
+    def __init__(self, valid_keys, *args, **kwargs):
+        self.valid_keys = valid_keys
+        self._err_msg = "Key '{0}' is not a valid filter parameter."
+        super(ValidatedFilterDict, self).__init__(*args, **kwargs)
+        self._validate_keys()
+
+    def __setitem__(self, key, value):
+        if key not in self.valid_keys:
+            raise KeyError(self._err_msg.format(key))
+        super(ValidatedFilterDict, self).__setitem__(key, value)
+
+    def update(self, *args, **kwargs):
+        for key in dict(*args, **kwargs).keys():
+            if key not in self.valid_keys:
+                raise KeyError(self._err_msg.format(key))
+        super(ValidatedFilterDict, self).update(*args, **kwargs)
+
+    def _validate_keys(self):
+        for key in self.keys():
+            if key not in self.valid_keys:
+                raise KeyError(self._err_msg.format(key))
+
+    def __reduce__(self):
+        return (self.__class__, (self.valid_keys, dict(self)))

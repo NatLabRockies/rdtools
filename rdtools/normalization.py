@@ -478,9 +478,9 @@ def _aggregate(time_series, target_frequency, max_timedelta, series_type):
     '''
 
     # series that has same index as desired output
-    output_dummy = time_series.resample(target_frequency,
-                                        closed='right',
-                                        label='right').sum()
+    output_dummy = time_series.resample(
+        target_frequency, closed="right", label="right", origin="start"
+    ).sum()
 
     union_index = time_series.index.union(output_dummy.index)
     time_series = time_series.dropna()
@@ -521,13 +521,13 @@ def _aggregate(time_series, target_frequency, max_timedelta, series_type):
         raise ValueError("series_type must be either 'instantaneous' or 'right_labeled', "
                          "not '{}'".format(series_type))
 
-    series_sum = pd.Series(data=series_sum, index=time_series.index[1:])
+    series_sum = pd.Series(data=np.insert(series_sum, 0, np.nan), index=time_series.index)
 
-    aggregated = series_sum.resample(target_frequency,
-                                     closed='right',
-                                     label='right').sum(min_count=1)
+    aggregated = series_sum.resample(
+        target_frequency, closed="right", label="right", origin="start"
+    ).sum(min_count=1)
 
-    return aggregated
+    return aggregated[1:]
 
 
 def _interpolate_series(time_series, target_index, max_timedelta=None,
@@ -575,9 +575,9 @@ def _interpolate_series(time_series, target_index, max_timedelta=None,
     df = df.dropna()
 
     # convert to integer index and calculate the size of gaps in input
-    timestamps = df.index.view('int64')
-    df['timestamp'] = timestamps
-    df['gapsize_ns'] = df['timestamp'].diff()
+    timestamps = df.index.view("int64").copy()
+    df["timestamp"] = timestamps
+    df["gapsize_ns"] = df["timestamp"].diff()
     df.index = timestamps
 
     valid_indput_index = df.index.copy()
