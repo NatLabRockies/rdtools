@@ -12,6 +12,7 @@ when compared with older versions of RdTools
 * Turn on the ``two_way_window_filter`` by default in ``TrendAnalysis`` (:pull:`425`)
 * Upgrade pvlib 0.9.0 to 0.11.0 (:pull:`428`)
 
+* Upgrade soiling algorithms SRR and CODS. Remove experimental warning label. (:pull:`426`)
 
 Enhancements
 ------------
@@ -28,10 +29,13 @@ Enhancements
 * Added checks to TrendAnalysis for `filter_params` and `filter_params_aggregated`. Raises an error if unkown filter is supplied. (:pull:`436`)
 * Added a new wrapper function for clearsky filters (:pull:`412`)
 * Added codecov.yml configuration file (:pull:`420`)
+* Added new methods perfect_clean_complex and inferred_clean_complex which detects negative shifts and piecewise changes in the slope for soiling detection in :py:func:`~rdtools.soiling.soiling_srr`(:pull:`426`)
 * Availability module no longer considered experimental (:pull:`429`)
 * Allow sub-daily aggregation in :py:func:`~rdtools.degradation.degradation_year_on_year` (:pull:`390`)
 * Circular block bootstrapping added as a method for calculating uncertainty in
   ``degradation_year_on_year()`` via the ``Uncertainty_method`` argument (:pull:`150`)
+* Add capability to seed the CircularBlockBootstrap (:pull:`429`)
+
 
 
 Deprecations
@@ -56,7 +60,11 @@ Bug fixes
 * Fix flake8 missing whitespaces ``bootstrap_test.py``, ``soiling_cods_test.py`` (:pull:`400`)
 * Specify dtype for seasonal samples ``soiling.py`` (:pull:`400`)
 * Update deprecated `check_less_precise` to `rtol` ``soiling_cods_test.py`` (:pull:`400`)
+* Fixed pylint bare except error for :py:func:`~rdtools.soiling.segmented_soiling_period`
+in ``soiling.py`` (:pull:`432`)
 
+* Added pytests to cover invalid segementations for
+:py:func:`~rdtools.soiling.segmented_soiling_period` in ``soiling_cods_test.py`` (:pull:`432`)
 
 Requirements
 ------------
@@ -222,3 +230,6 @@ Contributors
 * Kirsten Perry (:ghuser:`kperrynrel`)
 * Åsmund Skomedal (:ghuser:`asmunds`)
 * Martin Springer (:ghuser:`martin-springer`)
+* Matthew Muller (:ghuser:`mmuller`)
+* Noah Moyer (:ghuser:`noromo01`)
+* Quyen Nguyen (:ghuser:`qnguyen345`)
