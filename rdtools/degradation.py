@@ -335,7 +335,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     # see https://github.com/pandas-dev/pandas/issues/57734
     energy_normalized = energy_normalized.merge(usage_of_points, how='left', left_on='dt',
                                                 right_index=True, left_index=False
-                                                ).fillna(0.0).infer_objects(copy=False)
+                                                ).fillna(0.0).infer_objects()
 
     if uncertainty_method == 'simple':  # If we need the full results
         calc_info = {
