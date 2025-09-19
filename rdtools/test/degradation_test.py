@@ -249,8 +249,6 @@ class DegradationTestCase(unittest.TestCase):
         ).tz_localize('UTC')
 
         result = _avg_timestamp_old_Pandas(dt, dt_right).asfreq(freq='D')
-        print(result)
-        print(expected)
 
         pd.testing.assert_series_equal(result, expected)
 
