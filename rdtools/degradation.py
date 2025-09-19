@@ -209,7 +209,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         If `uncertainty_method` is 'circular_block', `block_length`
         determines the length of the blocks used in the circular block bootstrapping
         in number of days. Must be shorter than a third of the time series.
-    label    : {'right', 'center'}, default 'right'
+    label    : {'right', 'center', 'left'}, default 'right'
         Which Year-on-Year slope edge to label.
 
     Returns
@@ -222,7 +222,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     calc_info : dict
 
         * `YoY_values` - pandas series of year on year slopes, either right
-            or center labeled, depending on the `label` parameter.
+           left or center labeled, depending on the `label` parameter.
         * `renormalizing_factor` - float of value used to recenter data
         * `exceedance_level` - the degradation rate that was outperformed with
           probability of `exceedance_prob`
