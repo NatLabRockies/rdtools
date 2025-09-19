@@ -340,8 +340,12 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     yoy_result.index = YoY_times[f'dt_{label}']
     yoy_result.index.name = None
 
+    # with pd.option_context('future.no_silent_downcasting', True):
+    # the following is throwing a futurewarning if infer_objects() isn't included here.
+    # see https://github.com/pandas-dev/pandas/issues/57734
     energy_normalized = energy_normalized.merge(usage_of_points, how='left', left_on='dt',
-                                                right_index=True, left_index=False).fillna(0.0)
+                                                right_index=True, left_index=False
+                                                ).infer_objects().fillna(0.0)
 
     if uncertainty_method == 'simple':  # If we need the full results
         calc_info = {
