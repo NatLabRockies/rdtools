@@ -17,6 +17,7 @@ import matplotlib
 import plotly
 import pytest
 import re
+import copy
 
 from conftest import assert_isinstance
 
@@ -271,5 +272,14 @@ def test_degradation_timeseries_plot(degradation_info):
         degradation_timeseries_plot({'a': 1}, include_ci=False)
     with pytest.raises(ValueError):
         degradation_timeseries_plot(yoy_info, include_ci=False, label='CENTER')
+
+    # Add multi-YoY test by duplication idx=100
+    yoy_multi = copy.deepcopy(yoy_info)
+    new_idx = yoy_multi['YoY_values'].index[100]
+    new_val = yoy_multi['YoY_values'].iloc[100]
+    yoy_values_multi = pd.concat([yoy_multi['YoY_values'], pd.Series([new_val], index=[new_idx])])
+    yoy_multi['YoY_values'] = yoy_values_multi
+    result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False)
+    assert_isinstance(result, plt.Figure)
 
     plt.close('all')
