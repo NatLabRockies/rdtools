@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import warnings
+import datetime
 
 
 def degradation_summary_plots(yoy_rd, yoy_ci, yoy_info, normalized_yield,
@@ -472,8 +473,6 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, lab
     -------
     matplotlib.figure.Figure
     '''
-
-    import datetime
 
     def _bootstrap(x, percentile, reps):
         # stolen from degradation_year_on_year
