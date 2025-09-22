@@ -15,7 +15,8 @@ from rdtools.plotting import (
 import matplotlib.pyplot as plt
 import matplotlib
 import plotly
-import pytest, warnings
+import pytest
+import warnings
 import re
 import copy
 
