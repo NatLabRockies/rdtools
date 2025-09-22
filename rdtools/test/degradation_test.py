@@ -290,6 +290,33 @@ def test_yoy_two_years_error(start, end, freq):
         _ = degradation_year_on_year(series.iloc[1:])
 
 
+def test_degradation_year_on_year_multi():
+    """Test degradation_year_on_year with multi_yoy=True. Thanks GPT!"""
+    rd = -0.005
+    # Generate a daily time series with 3 years of data
+    idx = pd.date_range('2017-01-01', '2020-01-01', freq='D', tz='UTC')
+    daily_rd = 1 - (1 + rd)**(1/365)
+    day_count = np.arange(len(idx))
+    degradation_derate = (1 + daily_rd) ** day_count
+    power = 1 - 0.1 * np.cos(day_count / 365 * 2 * np.pi)
+    power *= degradation_derate
+    power = pd.Series(power, index=idx)
+    # Standard yoy baseline
+    (rd0, rd_ci0, calc_info0) = degradation_year_on_year(power, multi_yoy=False)
+    # Run multi_yoy test
+    rd_result = degradation_year_on_year(power, multi_yoy=True)
+    # Should return a tuple (Rd_pct, Rd_CI, calc_info)
+    assert isinstance(rd_result, tuple)
+    assert len(rd_result) == 3
+    Rd_pct, Rd_CI, calc_info = rd_result
+    # Check that the result is close to expected degradation
+    assert np.isclose(Rd_pct * -1, 100 * rd, atol=0.5)
+    # Check that YoY_values exists and is a Series
+    assert isinstance(calc_info['YoY_values'], pd.Series)
+    # Should have more YoY value for multi_yoy than standard
+    assert len(calc_info['YoY_values']) > len(calc_info0['YoY_values'])
+
+
 if __name__ == '__main__':
     # Initialize logger when run as a module:
     #     python -m tests.degradation_test
