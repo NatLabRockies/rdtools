@@ -227,7 +227,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     calc_info : dict
 
         * `YoY_values` - pandas series of year on year slopes, either right
-            or center labeled, depending on the `label` parameter.
+           left or center labeled, depending on the `label` parameter.
         * `renormalizing_factor` - float of value used to recenter data
         * `exceedance_level` - the degradation rate that was outperformed with
           probability of `exceedance_prob`
@@ -335,8 +335,9 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     YoY_times = YoY_times.rename(columns={'dt': 'dt_right'})
 
     YoY_times.set_index(YoY_times[f'dt_{label}'], inplace=True)
-    # YoY_times = YoY_times.rename_axis(None, axis=1)
     YoY_times.index.name = None
+
+    # now apply either right, left, or center label index to the yoy_result
     yoy_result.index = YoY_times[f'dt_{label}']
     yoy_result.index.name = None
 
