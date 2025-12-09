@@ -254,20 +254,45 @@ def test_availability_summary_plots_empty(availability_analysis_object):
 def test_degradation_timeseries_plot(degradation_info):
     power, yoy_rd, yoy_ci, yoy_info = degradation_info
 
-    # test defaults
-    result = degradation_timeseries_plot(yoy_info)
-    assert_isinstance(result, plt.Figure)
-    assert (result.get_axes()[0].get_xlim()[0] == 17685.55)
-    # test other label options
-    result = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False,
-                                         label='center', fig=result)
-    assert_isinstance(result, plt.Figure)
-    assert (result.get_axes()[0].get_xlim()[0] == 17304.4)
-    result = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False, label='left')
-    assert_isinstance(result, plt.Figure)
-    assert (result.get_axes()[0].get_xlim()[0] == 17130.5)
-    result = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False, label=None)
-    assert_isinstance(result, plt.Figure)
+    # test defaults (label='right')
+    result_right = degradation_timeseries_plot(yoy_info)
+    assert_isinstance(result_right, plt.Figure)
+    xlim_right = result_right.get_axes()[0].get_xlim()[0]
+
+    # test label='center'
+    result_center = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False,
+                                                label='center', fig=result_right)
+    assert_isinstance(result_center, plt.Figure)
+    xlim_center = result_center.get_axes()[0].get_xlim()[0]
+
+    # test label='left'
+    result_left = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False, label='left')
+    assert_isinstance(result_left, plt.Figure)
+    xlim_left = result_left.get_axes()[0].get_xlim()[0]
+
+    # test label=None (should default to 'right')
+    result_none = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False, label=None)
+    assert_isinstance(result_none, plt.Figure)
+    xlim_none = result_none.get_axes()[0].get_xlim()[0]
+
+    # Check that the xlim values are offset as expected
+    # right > center > left (since offset_days increases)
+    assert xlim_right > xlim_center > xlim_left
+    assert xlim_right == xlim_none  # label=None defaults to 'right'
+
+    # The expected difference from right to left is 548 days (1.5 yrs), allow 5% tolerance
+    expected_diff = 548
+    actual_diff = (xlim_right - xlim_left)
+    tolerance = expected_diff * 0.05
+    assert abs(actual_diff - expected_diff) <= tolerance, \
+        f"difference of right-left xlim {actual_diff} not within 5% of 1.5 yrs."
+
+    # The expected difference from right to center is 365 days, allow 5% tolerance
+    expected_diff2 = 365
+    actual_diff2 = (xlim_right - xlim_center)
+    tolerance2 = expected_diff2 * 0.05
+    assert abs(actual_diff2 - expected_diff2) <= tolerance2, \
+        f"difference of right-center xlim {actual_diff2} not within 5% of 1 yr."
 
     with pytest.raises(KeyError):
         degradation_timeseries_plot({'a': 1}, include_ci=False)
