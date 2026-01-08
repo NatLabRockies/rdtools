@@ -30,6 +30,6 @@ statsmodels==0.14.2
 threadpoolctl==3.5.0
 tomli==2.0.1
 typing_extensions==4.12.2
-urllib3==2.5.0
+urllib3==2.6.3
 xgboost==2.1.1
 
