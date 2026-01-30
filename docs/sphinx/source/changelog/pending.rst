@@ -6,6 +6,7 @@ Requirements
 * Added numpy upper version restriction in setup.py. Now "numpy >= 1.22.4, <2.3.0".
 * Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compativility.
 * Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
+* Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.
 
 
 Warnings
