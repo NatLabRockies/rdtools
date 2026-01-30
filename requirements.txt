@@ -14,8 +14,8 @@ pandas==2.2.3
 patsy==1.0.0
 Pillow==11.0.0
 plotly==6.1.1
-pvlib==0.13.1
-pyparsing==3.1.2
+pvlib==0.14.0
+pyparsing==3.2.0
 python-dateutil==2.9.0
 pytz==2024.1
 arch==7.0.0
