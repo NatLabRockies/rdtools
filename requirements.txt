@@ -6,8 +6,8 @@ fonttools==4.58.4
 h5py==3.12.0
 idna==3.8
 joblib==1.5.2
-kiwisolver==1.4.5
-matplotlib==3.9.2
+kiwisolver==1.4.6
+matplotlib==3.9.4
 numpy==2.1.1
 packaging==24.1
 pandas==2.2.3
