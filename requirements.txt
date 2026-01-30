@@ -17,7 +17,7 @@ plotly==6.1.1
 pvlib==0.14.0
 pyparsing==3.2.0
 python-dateutil==2.9.0
-pytz==2024.1
+pytz==2025.2
 arch==7.0.0
 filterpy==1.4.5
 requests==2.32.3
