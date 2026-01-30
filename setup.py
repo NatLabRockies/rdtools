@@ -44,7 +44,7 @@ TESTS_REQUIRE = [
 
 INSTALL_REQUIRES = [
     "matplotlib >= 3.5.3",
-    "numpy >= 1.22.4",
+    "numpy >= 1.22.4, <2.3.0",
     "pandas >= 1.4.4, <3.0.0",
     "statsmodels >= 0.13.5",
     "scipy >= 1.8.1",
@@ -80,10 +80,10 @@ CLASSIFIERS = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
 
