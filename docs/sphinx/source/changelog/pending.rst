@@ -7,7 +7,7 @@ Requirements
 * Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compativility.
 * Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
 * Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.
-* Updated scikit-learn version in requirements.txt from 1.5.1 to 1.6.0 for python 3.13 compatibility.
+* Updated scikit-learn version in requirements.txt from 1.5.1 to 1.7.2 for python 3.13 and xgboost compatibility.
 * Updated plotly version in requirements.txt from 5.23.0 to 6.1.1 for python 3.13 compatibility.
 * Updated setuptools-scm version in requirements.txt from 8.1.0 to 9.2.2 for python 3.13 compatibility.
 * Updated six version in requirements.txt from 1.16.0 to 1.17.0 for python 3.13 compatibility.
