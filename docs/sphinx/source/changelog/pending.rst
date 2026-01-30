@@ -10,6 +10,16 @@ Requirements
 * Updated scikit-learn version in requirements.txt from 1.5.1 to 1.6.0 for python 3.13 compatibility.
 * Updated plotly version in requirements.txt from 5.23.0 to 6.1.1 for python 3.13 compatibility.
 * Updated setuptools-scm version in requirements.txt from 8.1.0 to 9.2.2 for python 3.13 compatibility.
+* Updated six version in requirements.txt from 1.16.0 to 1.17.0 for python 3.13 compatibility.
+* Updated statsmodels version in requirements.txt from 0.14.2 to 0.14.6 for python 3.13 compatibility.
+* Updated threadpoolctl version in requirements.txt from 3.5.0 to 3.6.0 for python 3.13 compatibility.
+* Updated tomli version in requirements.txt from 2.0.1 to 2.0.2 for python 3.13 compatibility.
+* Updated typing_extensions version in requirements.txt from 4.12.2 to 4.15.0 for python 3.13 compatibility.
+* Updated urllib3 version in requirements.txt from 2.2.2 to 2.4.0 for python 3.13 compatibility.
+* Updated xgboost version in requirements.txt from 2.1.1 to 3.1.3 for python 3.13 compatibility.
+* Updated fonttools version in requirements.txt from 4.53.1 to 4.58.4 for python 3.13 compatibility.
+* Updated idna version in requirements.txt from 3.7 to 3.8 for python 3.13 compatibility.
+* Updated joblib version in requirements.txt from 1.4.2 to 1.5.2 for python 3.13 compatibility.
 
 
 Warnings
