@@ -27,7 +27,7 @@ scipy==1.14.1
 setuptools-scm==9.2.2
 six==1.17.0
 statsmodels==0.14.6
-threadpoolctl==3.5.0
+threadpoolctl==3.6.0
 tomli==2.0.1
 typing_extensions==4.12.2
 urllib3==2.2.2
