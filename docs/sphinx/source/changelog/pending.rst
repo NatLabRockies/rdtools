@@ -15,7 +15,7 @@ Requirements
 * Updated threadpoolctl version in requirements.txt from 3.5.0 to 3.6.0 for python 3.13 compatibility.
 * Updated tomli version in requirements.txt from 2.0.1 to 2.0.2 for python 3.13 compatibility.
 * Updated typing_extensions version in requirements.txt from 4.12.2 to 4.15.0 for python 3.13 compatibility.
-* Updated urllib3 version in requirements.txt from 2.2.2 to 2.4.0 for python 3.13 compatibility.
+* Updated urllib3 version in requirements.txt from 2.2.2 to 2.6.3 for python 3.13 compatibility and to fix security issues.
 * Updated xgboost version in requirements.txt from 2.1.1 to 3.1.3 for python 3.13 compatibility.
 * Updated fonttools version in requirements.txt from 4.53.1 to 4.58.4 for python 3.13 compatibility.
 * Updated idna version in requirements.txt from 3.7 to 3.8 for python 3.13 compatibility.
