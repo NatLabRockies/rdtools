@@ -572,14 +572,19 @@ class TrendAnalysis:
             filter_components["tcell_filter"] = f
         if "clip_filter" in self.filter_params:
             if self.pv_power is None:
-                raise ValueError(
-                    "PV power (not energy) is required for the clipping filter. "
-                    "Either omit the clipping filter, provide PV power at "
-                    "instantiation, or explicitly assign TrendAnalysis.pv_power."
+                # raise ValueError(
+                #     "PV power (not energy) is required for the clipping filter. "
+                #     "Either omit the clipping filter, provide PV power at "
+                #     "instantiation, or explicitly assign TrendAnalysis.pv_power."
+                # )
+
+                f = filtering.clip_filter(
+                    self.pv_energy, **self.filter_params["clip_filter"]
                 )
-            f = filtering.clip_filter(
-                self.pv_power, **self.filter_params["clip_filter"]
-            )
+            else:
+                f = filtering.clip_filter(
+                    self.pv_power, **self.filter_params["clip_filter"]
+                )
             filter_components["clip_filter"] = f
         if "hour_angle_filter" in self.filter_params:
             if not hasattr(self, "pvlib_location"):
