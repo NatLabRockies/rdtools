@@ -571,20 +571,17 @@ class TrendAnalysis:
             f = filtering.tcell_filter(cell_temp, **self.filter_params["tcell_filter"])
             filter_components["tcell_filter"] = f
         if "clip_filter" in self.filter_params:
-            if self.pv_power is None:
-                # raise ValueError(
-                #     "PV power (not energy) is required for the clipping filter. "
-                #     "Either omit the clipping filter, provide PV power at "
-                #     "instantiation, or explicitly assign TrendAnalysis.pv_power."
-                # )
+            # Check that the time series frequency is 60 minutes or less
+            clip_data = self.pv_power if self.pv_power is not None else self.pv_energy
+            if clip_data is not None and len(clip_data) > 1:
+                median_freq = pd.Series(clip_data.index).diff().median()
+                if median_freq > pd.Timedelta(minutes=60):
+                    raise ValueError(
+                        f"clip_filter requires time series frequency of 60 minutes or less. "
+                        f"Median time step is {median_freq}."
+                    )
 
-                f = filtering.clip_filter(
-                    self.pv_energy, **self.filter_params["clip_filter"]
-                )
-            else:
-                f = filtering.clip_filter(
-                    self.pv_power, **self.filter_params["clip_filter"]
-                )
+            f = filtering.clip_filter(clip_data, **self.filter_params["clip_filter"])
             filter_components["clip_filter"] = f
         if "hour_angle_filter" in self.filter_params:
             if not hasattr(self, "pvlib_location"):
