@@ -865,6 +865,25 @@ def test_errors(sensor_parameters, clearsky_analysis):
         clearsky_analysis._clearsky_preprocess()
 
 
+def test_clip_filter_frequency_error(basic_parameters):
+    # Test that clip_filter raises an error when data frequency > 60 minutes
+    times = pd.date_range("2019-01-01", "2022-01-01", freq="2h", tz="UTC")
+    pv = pd.Series(1.0, index=times)
+    poa_global = pd.Series(1000.0, index=times)
+    temperature_ambient = pd.Series(25.0, index=times)
+
+    rd_analysis = TrendAnalysis(
+        pv,
+        poa_global=poa_global,
+        temperature_ambient=temperature_ambient,
+        pv_input="energy",
+        **basic_parameters,
+    )
+    rd_analysis.filter_params = {"clip_filter": {}}
+    with pytest.raises(ValueError, match="clip_filter requires time series frequency of 60 minutes or less"):
+        rd_analysis.sensor_analysis(analyses=["yoy_degradation"])
+
+
 @pytest.mark.parametrize(
     "method_name",
     [
