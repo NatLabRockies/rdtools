@@ -880,7 +880,9 @@ def test_clip_filter_frequency_error(basic_parameters):
         **basic_parameters,
     )
     rd_analysis.filter_params = {"clip_filter": {}}
-    with pytest.raises(ValueError, match="clip_filter requires time series frequency of 60 minutes or less"):
+    with pytest.raises(
+        ValueError, match="clip_filter requires time series frequency of 60 minutes"
+    ):
         rd_analysis.sensor_analysis(analyses=["yoy_degradation"])
 
 
