@@ -29,6 +29,16 @@ Requirements
 * Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
 
 
+Enhancements
+------------
+* Modified ``TrendAnalysis._filter()`` to allow ``clip_filter`` to use ``pv_energy``
+  when ``pv_power`` is not available. This enables clipping detection for energy-based
+  analyses with sub-hourly data.
+* Added frequency validation for ``clip_filter`` in ``TrendAnalysis._filter()`` that
+  raises a ``ValueError`` if the time series has a median time step greater than 60
+  minutes, as clipping detection requires higher resolution data.
+
+
 Warnings
 --------
 * Added filter to ignore deprecation warning related to IPyNbFile in setup.cfg.
