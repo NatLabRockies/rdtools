@@ -1510,8 +1510,8 @@ class CODSAnalysis():
                   '{:.3e}'.format(adf_res[1]))
 
         # Check size of soiling signal vs residuals
-        SR_amp = float(np.diff(df_out.soiling_ratio.quantile([.1, .9])))
-        residuals_amp = float(np.diff(df_out.residuals.quantile([.1, .9])))
+        SR_amp = float(np.diff(df_out.soiling_ratio.quantile([.1, .9]))[0])
+        residuals_amp = float(np.diff(df_out.residuals.quantile([.1, .9]))[0])
         soiling_signal_strength = SR_amp / residuals_amp
         if soiling_signal_strength < soiling_significance:
             if verbose:
@@ -2216,7 +2216,7 @@ class CODSAnalysis():
             # The median zs of the week after the cleaning event
             z_med = rolling_median_local[HW+3]
             # Set control input this future median
-            u[0] = z_med - np.dot(f.H, np.dot(f.F, f.x))
+            u[0] = z_med - np.dot(f.H, np.dot(f.F, f.x)).item()
             # If the change is bigger than the measurement noise:
             if np.abs(u[0]) > np.sqrt(f.R)/2:
                 index_dummy = [n+3 for n in range(window_size-HW-1)
