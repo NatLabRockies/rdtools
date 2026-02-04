@@ -32,7 +32,7 @@ SETUP_REQUIRES = [
 ]
 
 TESTS_REQUIRE = [
-    "pytest >= 3.6.3",
+    "pytest >= 3.10.1",
     "pytest-cov",
     "coverage",
     "flake8",
@@ -44,15 +44,15 @@ TESTS_REQUIRE = [
 
 INSTALL_REQUIRES = [
     "matplotlib >= 3.5.3",
-    "numpy >= 1.22.4, <2.3.0",
-    "pandas >= 1.4.4, <3.0.0",
+    "numpy >= 1.22.4",
+    "pandas >= 1.4.4",
     "statsmodels >= 0.13.5",
     "scipy >= 1.8.1",
     "h5py >= 3.7.0",
     "plotly>=4.0.0",
     "xgboost >= 1.6.0",
-    "pvlib",
-    "scikit-learn",
+    "pvlib >= 0.12.0",
+    "scikit-learn <1.6.0, >=1.6.1",
     "arch >= 5.0",
     "filterpy >= 1.4.2",
 ]
