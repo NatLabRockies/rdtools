@@ -2,8 +2,13 @@ Requirements
 ------------
 * Removed pvlib version restrictions in setup.py. Previously "pvlib >= 0.11.0, <0.12.0", now "pvlib".
 * Updated pvlib version in requirements.txt from 0.11.0 to 0.14.0
+<<<<<<< fix-numpy-and-pandas-compatibility
 * Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
 * Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
+=======
+* Added pandas upper version restriction in setup.py. Now "pandas >= 1.4.4, <3.0.0".
+* Added numpy upper version restriction in setup.py. Now "numpy >= 1.22.4, <2.3.0".
+>>>>>>> development
 * Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compativility.
 * Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
 * Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.

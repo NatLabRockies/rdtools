@@ -570,14 +570,8 @@ def _interpolate_series(time_series, target_index, max_timedelta=None,
 
     # convert to numeric index (seconds since epoch) for interpolation
     # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
-    # Convert to UTC for consistent epoch calculation across timezones
-    if df.index.tz is not None:
-        df_utc = df.index.tz_convert('UTC')
-        epoch = pd.Timestamp('1970-01-01', tz='UTC')
-    else:
-        df_utc = df.index
-        epoch = pd.Timestamp('1970-01-01')
-    timestamps = (df_utc - epoch).total_seconds().values
+    epoch = pd.Timestamp('1970-01-01', tz=df.index.tz)
+    timestamps = (df.index - epoch).total_seconds().values
     df["timestamp"] = timestamps
     df["gapsize_s"] = df["timestamp"].diff()
     df.index = timestamps
@@ -597,12 +591,7 @@ def _interpolate_series(time_series, target_index, max_timedelta=None,
                       UserWarning, stacklevel=3)
 
     # put data on index that includes both original and target indices
-    # Convert target to UTC for consistent epoch calculation
-    if target_index.tz is not None:
-        target_utc = target_index.tz_convert('UTC')
-    else:
-        target_utc = target_index
-    target_timestamps = pd.Index((target_utc - epoch).total_seconds())
+    target_timestamps = pd.Index((target_index - epoch).total_seconds())
     union_index = df.index.append(target_timestamps)
     union_index = union_index.drop_duplicates(keep='first')
     df = df.reindex(union_index)
