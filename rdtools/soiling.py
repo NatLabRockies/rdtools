@@ -1889,11 +1889,11 @@ class CODSAnalysis():
         # Save best estimate and bootstrapped estimates of SR and soiling rates
         df_out.soiling_ratio = df_out.soiling_ratio.clip(lower=0, upper=1)
         df_out.loc[df_out.soiling_ratio.diff() == 0, 'soiling_rates'] = 0
-        df_out['bt_soiling_ratio'] = (concat_SR * weights).sum(1)
-        df_out['bt_soiling_rates'] = (concat_r_s * weights).sum(1)
+        df_out['bt_soiling_ratio'] = (concat_SR * weights).sum(axis=1)
+        df_out['bt_soiling_rates'] = (concat_r_s * weights).sum(axis=1)
 
         # Set probability of cleaning events
-        df_out.cleaning_events = (concat_ce * weights).sum(1)
+        df_out.cleaning_events = (concat_ce * weights).sum(axis=1)
 
         # Find degradation rates
         self.degradation = [np.dot(bt_deg, weights),
@@ -1908,7 +1908,7 @@ class CODSAnalysis():
                              np.quantile(bt_SL, ci_high_edge)]
 
         # Save "confidence intervals" for seasonal component
-        df_out.seasonal_component = (seasonal_samples * weights).sum(1)
+        df_out.seasonal_component = (seasonal_samples * weights).sum(axis=1)
         df_out['seasonal_low'] = seasonal_samples.quantile(ci_low_edge, 1)
         df_out['seasonal_high'] = seasonal_samples.quantile(ci_high_edge, 1)
 
@@ -2534,7 +2534,7 @@ def _make_seasonal_samples(list_of_SCs, sample_nr=10, min_multiplier=0.5,
                 year=signal.index.year
             ).pivot(index='doy', columns='year', values='values')
         # We will use the median signal through all the years...
-        median_signal = year_matrix.median(1)
+        median_signal = year_matrix.median(axis=1)
         for j in range(sample_nr):
             # Generate random multiplier and phase shift
             multiplier = np.random.uniform(min_multiplier, max_multiplier)
@@ -2578,7 +2578,7 @@ def _force_periodicity(in_signal, signal_index, out_index):
         year_matrix[year] = \
             signal.loc[str(year)].reindex(dates_in_year).values[:365]
     # We will use the median signal through all the years...
-    median_signal = year_matrix.median(1)
+    median_signal = year_matrix.median(axis=1)
     # The output is the median signal broadcasted to the whole time series
     output = pd.Series(
         index=out_index,
