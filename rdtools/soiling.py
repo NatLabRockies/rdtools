@@ -2,7 +2,7 @@
 Functions for calculating soiling metrics from photovoltaic system data.
 """
 
-from rdtools import degradation as RdToolsDeg
+from rdtools import degradation
 from rdtools.bootstrap import _make_time_series_bootstrap_samples
 
 import bisect
@@ -61,17 +61,15 @@ class SRRAnalysis:
         self.monte_losses = []
 
         if pd.infer_freq(self.pm.index) != "D":
-            raise ValueError("Daily performance metric series must have " "daily frequency")
+            raise ValueError("Daily performance metric series must have daily frequency")
 
         if pd.infer_freq(self.insolation_daily.index) != "D":
-            raise ValueError("Daily insolation series must have " "daily frequency")
+            raise ValueError("Daily insolation series must have daily frequency")
 
         if self.precipitation_daily is not None:
             if pd.infer_freq(self.precipitation_daily.index) != "D":
-                raise ValueError("Precipitation series must have " "daily frequency")
+                raise ValueError("Precipitation series must have daily frequency")
 
-    ###############################################################################
-    # add neg_shift and piecewise into parameters/Matt
     def _calc_daily_df(self, day_scale=13, clean_threshold="infer", recenter=True,
                        clean_criterion="shift", precip_threshold=0.01, outlier_factor=1.5,
                        neg_shift=False, piecewise=False):
@@ -261,9 +259,9 @@ class SRRAnalysis:
                 pr = pr.ffill()  # linear fitting cant handle nans
                 pr = pr.bfill()  # catch first position nan
                 if len(run) > min_soil_length and run.pi_norm.sum() > 0:
-                    sr, cp_date = segmented_soiling_period(pr, days_clean_vs_cp=13)
-                    if cp_date is not None:
-                        cp_dates.append(pr.index[cp_date])
+                    sr, cp_index = _segmented_soiling_period(pr)
+                    if cp_index is not None:
+                        cp_dates.append(pr.index[cp_index])
             # save changes to df, note I would like to rename "clean_event" from
             # original code to something like "break_event
             df["slope_change_event"] = df.index.isin(cp_dates)
@@ -1729,15 +1727,18 @@ class CODSAnalysis:
                 if degradation_method == "STL":  # If not YoY
                     deg_trend = pd.Series(index=pi.index, data=STL_res.trend.apply(np.exp))
                     degradation_trend.append(deg_trend / deg_trend.iloc[0])
-                    yoy_save.append(RdToolsDeg.degradation_year_on_year(
-                            degradation_trend[-1], uncertainty_method=None))
+                    yoy_save.append(
+                        degradation.degradation_year_on_year(
+                            degradation_trend[-1], uncertainty_method=None
+                        )
+                    )
 
             # Find degradation component
             if order[(ic - 1) % n_steps] == "Rd":
                 # Decompose signal
                 trend_dummy = pi / seasonal_component[-1] / soiling_ratio[-1]
                 # Run YoY
-                yoy = RdToolsDeg.degradation_year_on_year(trend_dummy, uncertainty_method=None)
+                yoy = degradation.degradation_year_on_year(trend_dummy, uncertainty_method=None)
                 # Convert degradation rate to trend
                 degradation_trend.append(
                     pd.Series(index=pi.index, data=(1 + day * yoy / 100 / 365.0)))
@@ -2059,7 +2060,7 @@ class CODSAnalysis:
         if np.sum(small_soiling_signal) > nr_models / 2:
             self.result_df = result_df
             self.residual_shift = results[np.argmax(weights)]["residual_shift"]
-            YOY = RdToolsDeg.degradation_year_on_year(pi)
+            YOY = degradation.degradation_year_on_year(pi)
             self.degradation = [YOY[0], YOY[1][0], YOY[1][1]]
             self.soiling_loss = [0, 0, (1 - result_df.soiling_ratio).mean()]
             self.small_soiling_signal = True
@@ -2878,17 +2879,38 @@ def _progressBarWithETA(value, endvalue, time, bar_length=20):
     sys.stdout.flush()
 
 
-###############################################################################
-# all code below for new piecewise fitting in soiling intervals within srr/Matt
-###############################################################################
-def piecewise_linear(x, x0, b, k1, k2):
+def _piecewise_linear(x, x0, b, k1, k2):
+    """
+    Piecewise linear function with a single breakpoint.
+
+    Parameters
+    ----------
+    x : array-like
+        Independent variable
+    x0 : float
+        Breakpoint location where the slope changes
+    b : float
+        y-intercept of the first segment
+    k1 : float
+        Slope of the first segment (x < x0)
+    k2 : float
+        Change in slope for the second segment (x >= x0).
+        The slope of the second segment is k1 + k2.
+
+    Returns
+    -------
+    array-like
+        Piecewise linear values:
+        - For x < x0: k1 * x + b
+        - For x >= x0: k1 * x + b + k2 * (x - x0)
+    """
     cond_list = [x < x0, x >= x0]
     func_list = [lambda x: k1 * x + b, lambda x: k1 * x + b + k2 * (x - x0)]
     return np.piecewise(x, cond_list, func_list)
 
 
-def segmented_soiling_period(
-        pr, fill_method="bfill", days_clean_vs_cp=7, initial_guesses=[13, 1, 0, 0],
+def _segmented_soiling_period(
+        pr, fill_method="bfill", days_clean_vs_cp=13, initial_guesses=[13, 1, 0, 0],
         bounds=None, min_r2=0.15):
     # note min_r2 was 0.6 and it could be worth testing 10 day forward median as b guess
     """
@@ -2903,7 +2925,7 @@ def segmented_soiling_period(
         Series of daily performance ratios measured during the given deposition period.
     fill_method : str (default='bfill')
         Method to employ to fill any missing day.
-    days_clean_vs_cp : numeric (default=7)
+    days_clean_vs_cp : numeric (default=13)
         Minimum number of days accepted between cleanings and change points.
     bounds : numeric (default=None)
         List of bounds for fitting function. If not specified, they are
@@ -2918,8 +2940,8 @@ def segmented_soiling_period(
     sr: numeric
         Series containing the daily soiling ratio values after segmentation.
         List of nan if segmentation was not possible.
-    cp_date: datetime
-        Datetime in which continuous change points occurred.
+    cp_index: int
+        Integer index at which continuous change point occurred.
         None if segmentation was not possible.
     """
     # Check if PR dataframe has datetime index
@@ -2936,17 +2958,17 @@ def segmented_soiling_period(
 
     try:
         # Fit soiling profile with segmentation
-        p, e = curve_fit(piecewise_linear, x, y, p0=initial_guesses, bounds=bounds)
+        p, e = curve_fit(_piecewise_linear, x, y, p0=initial_guesses, bounds=bounds)
 
         # Ignore change point if too close to a cleaning
-        # Change point p[0] converted to integer to extract a date.
+        # Change point p[0] converted to integer to use as an index.
         # None if no change point is found.
         if p[0] > days_clean_vs_cp and p[0] < len(y) - days_clean_vs_cp:
-            z = piecewise_linear(x, *p)
-            cp_date = int(p[0])
+            z = _piecewise_linear(x, *p)
+            cp_index = int(p[0])
         else:
             z = [np.nan] * len(x)
-            cp_date = None
+            cp_index = None
         R2_original = st.linregress(y, x)[2] ** 2
         R2_piecewise = st.linregress(y, z)[2] ** 2
 
@@ -2959,16 +2981,16 @@ def segmented_soiling_period(
             if (R2_piecewise < min_r2) | (
                     (R2_percent_of_possible_improve < 0.5) & (R2_percent_improve < 0.5)):
                 z = [np.nan] * len(x)
-                cp_date = None
+                cp_index = None
         else:
             if (R2_percent_improve < 0.01) | (R2_piecewise < 0.4):
                 z = [np.nan] * len(x)
-                cp_date = None
+                cp_index = None
     except ValueError as ex:
         print(f"Segmentation was not possible. Error: {ex}")
         z = [np.nan] * len(x)
-        cp_date = None
+        cp_index = None
     # Create Series from modelled profile
     sr = pd.Series(z, index=pr.index)
 
-    return sr, cp_date
+    return sr, cp_index
