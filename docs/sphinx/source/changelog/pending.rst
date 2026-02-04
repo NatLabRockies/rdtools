@@ -34,7 +34,6 @@ Requirements
 * Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
 
 
-<<<<<<< fix-numpy-and-pandas-compatibility
 Deprecations
 ------------
 * Removed deprecated ``normalization.delta_index`` function (deprecated in v2.0.0).
@@ -62,8 +61,6 @@ Bug Fixes
   aggregation methods.
 
 
-=======
->>>>>>> development
 Enhancements
 ------------
 * Modified ``TrendAnalysis._filter()`` to allow ``clip_filter`` to use ``pv_energy``
