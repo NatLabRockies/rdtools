@@ -52,7 +52,7 @@ INSTALL_REQUIRES = [
     "plotly>=4.0.0",
     "xgboost >= 1.6.0",
     "pvlib >= 0.12.0",
-    "scikit-learn <1.6.0, >=1.6.1",
+    "scikit-learn >= 1.1.3, != 1.6.0",
     "arch >= 5.0",
     "filterpy >= 1.4.2",
 ]
