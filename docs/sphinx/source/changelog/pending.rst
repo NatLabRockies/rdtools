@@ -66,6 +66,14 @@ Enhancements
   minutes, as clipping detection requires higher resolution data.
 
 
+Documentation
+-------------
+* Updated temperature coefficient (``gamma_pdc``) in PVDAQ example notebooks from -0.005 to
+  -0.0034 1/K to reflect modern silicon PV module specifications. Updated notebooks include
+  ``degradation_and_soiling_example.ipynb``, ``TrendAnalysis_example.ipynb``, and
+  ``TrendAnalysis_example_NSRDB.ipynb``.
+
+
 Warnings
 --------
 * Added filter to ignore deprecation warning related to IPyNbFile in setup.cfg.
