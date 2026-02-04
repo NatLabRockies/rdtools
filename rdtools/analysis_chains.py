@@ -475,7 +475,8 @@ class TrendAnalysis:
         if self.gamma_pdc is None:
             warnings.warn(
                 "Temperature coefficient not passed in to TrendAnalysis. "
-                "No temperature correction will be conducted."
+                "No temperature correction will be conducted.",
+                stacklevel=3,
             )
         pvwatts_kws = {
             "poa_global": poa_global,
@@ -619,7 +620,8 @@ class TrendAnalysis:
 
             if ad_hoc_filter.isnull().any():
                 warnings.warn(
-                    "ad_hoc_filter contains NaN values; setting to False (excluding)"
+                    "ad_hoc_filter contains NaN values; setting to False (excluding)",
+                    stacklevel=3,
                 )
                 ad_hoc_filter.loc[ad_hoc_filter.isnull()] = False
 
@@ -627,7 +629,8 @@ class TrendAnalysis:
                 warnings.warn(
                     "ad_hoc_filter index does not match index of other filters; missing "
                     "values will be set to True (kept). Align the index with the index "
-                    "of the filter_components attribute to prevent this warning"
+                    "of the filter_components attribute to prevent this warning",
+                    stacklevel=3,
                 )
                 ad_hoc_filter = ad_hoc_filter.reindex(filter_components.index)
                 ad_hoc_filter.loc[ad_hoc_filter.isnull()] = True
@@ -709,7 +712,8 @@ class TrendAnalysis:
 
             if ad_hoc_filter_aggregated.isnull().any():
                 warnings.warn(
-                    "aggregated ad_hoc_filter contains NaN values; setting to False (excluding)"
+                    "aggregated ad_hoc_filter contains NaN values; setting to False (excluding)",
+                    stacklevel=3,
                 )
                 ad_hoc_filter_aggregated.loc[ad_hoc_filter_aggregated.isnull()] = False
 
@@ -720,7 +724,8 @@ class TrendAnalysis:
                     "Aggregated ad_hoc_filter index does not match index of other "
                     "filters; missing values will be set to True (kept). "
                     "Align the index with the index of the "
-                    "filter_components_aggregated attribute to prevent this warning"
+                    "filter_components_aggregated attribute to prevent this warning",
+                    stacklevel=3,
                 )
                 ad_hoc_filter_aggregated = ad_hoc_filter_aggregated.reindex(
                     filter_components_aggregated.index
@@ -963,7 +968,8 @@ class TrendAnalysis:
                 """Clear-sky analysis is performed but `power_expected` was passed in by user.
                    In this case, the power normalization is not tied to the modeled clear-sky
                    irradiance and the clear-sky workflow may provide similar results to
-                   the sensor workflow."""
+                   the sensor workflow.""",
+                stacklevel=2,
             )
         self._filter(cs_normalized, "clearsky")
         cs_aggregated, cs_aggregated_insolation = self._aggregate(

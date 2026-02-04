@@ -64,6 +64,10 @@ Enhancements
 * Added frequency validation for ``clip_filter`` in ``TrendAnalysis._filter()`` that
   raises a ``ValueError`` if the time series has a median time step greater than 60
   minutes, as clipping detection requires higher resolution data.
+* Added ``stacklevel`` parameter to all ``warnings.warn()`` calls so that warning
+  messages point to user code rather than rdtools internals. Affected modules:
+  ``analysis_chains``, ``filtering``, ``soiling``, ``plotting``, ``normalization``,
+  ``availability``, and ``clearsky_temperature``.
 
 
 Warnings
