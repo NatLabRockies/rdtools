@@ -44,15 +44,15 @@ TESTS_REQUIRE = [
 
 INSTALL_REQUIRES = [
     "matplotlib >= 3.5.3",
-    "numpy >= 1.22.4",
-    "pandas >= 1.4.4",
+    "numpy >= 1.22.4, <2.3.0",
+    "pandas >= 1.4.4, <3.0.0",
     "statsmodels >= 0.13.5",
     "scipy >= 1.8.1",
     "h5py >= 3.7.0",
     "plotly>=4.0.0",
     "xgboost >= 1.6.0",
-    "pvlib >= 0.11.0, <0.12.0",
-    "scikit-learn >= 1.1.3, <1.6.0",
+    "pvlib",
+    "scikit-learn",
     "arch >= 5.0",
     "filterpy >= 1.4.2",
 ]
@@ -80,10 +80,10 @@ CLASSIFIERS = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
 
