@@ -26,7 +26,7 @@ Requirements
 * Updated matplotlib version in requirements.txt from 3.9.2 to 3.9.4 for python 3.13 compatibility.
 * Updated packaging version in requirements.txt from 24.1 to 26.0 for python 3.13 compatibility.
 * Updated patsy version in requirements.txt from 0.5.6 to 1.0.0 for python 3.13 compatibility.
-* Updated Pillow version in requirements.txt from 10.4.0 to 11.0.0 for python 3.13 compatibility.
+* Updated Pillow version in requirements.txt from 10.4.0 to 12.1.1 for python 3.13 compatibility.
 * Updated pyparsing version in requirements.txt from 3.1.2 to 3.2.0 for python 3.13 compatibility.
 * Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
 
