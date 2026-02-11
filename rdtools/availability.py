@@ -543,7 +543,7 @@ class AvailabilityAnalysis:
                 'levels. This is unexpected and could indicate a problem with '
                 'the input time series data.'
             )
-            warnings.warn(msg, UserWarning)
+            warnings.warn(msg, UserWarning, stacklevel=3)
 
         self.loss_total = self.loss_system + self.loss_subsystem
 
