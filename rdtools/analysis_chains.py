@@ -475,7 +475,8 @@ class TrendAnalysis:
         if self.gamma_pdc is None:
             warnings.warn(
                 "Temperature coefficient not passed in to TrendAnalysis. "
-                "No temperature correction will be conducted."
+                "No temperature correction will be conducted.",
+                stacklevel=3,
             )
         pvwatts_kws = {
             "poa_global": poa_global,
@@ -571,15 +572,17 @@ class TrendAnalysis:
             f = filtering.tcell_filter(cell_temp, **self.filter_params["tcell_filter"])
             filter_components["tcell_filter"] = f
         if "clip_filter" in self.filter_params:
-            if self.pv_power is None:
-                raise ValueError(
-                    "PV power (not energy) is required for the clipping filter. "
-                    "Either omit the clipping filter, provide PV power at "
-                    "instantiation, or explicitly assign TrendAnalysis.pv_power."
-                )
-            f = filtering.clip_filter(
-                self.pv_power, **self.filter_params["clip_filter"]
-            )
+            # Check that the time series frequency is 60 minutes or less
+            clip_data = self.pv_power if self.pv_power is not None else self.pv_energy
+            if clip_data is not None and len(clip_data) > 1:
+                median_freq = pd.Series(clip_data.index).diff().median()
+                if median_freq > pd.Timedelta(minutes=60):
+                    raise ValueError(
+                        f"clip_filter requires time series frequency of 60 minutes or less. "
+                        f"Median time step is {median_freq}."
+                    )
+
+            f = filtering.clip_filter(clip_data, **self.filter_params["clip_filter"])
             filter_components["clip_filter"] = f
         if "hour_angle_filter" in self.filter_params:
             if not hasattr(self, "pvlib_location"):
@@ -617,7 +620,8 @@ class TrendAnalysis:
 
             if ad_hoc_filter.isnull().any():
                 warnings.warn(
-                    "ad_hoc_filter contains NaN values; setting to False (excluding)"
+                    "ad_hoc_filter contains NaN values; setting to False (excluding)",
+                    stacklevel=3,
                 )
                 ad_hoc_filter.loc[ad_hoc_filter.isnull()] = False
 
@@ -625,7 +629,8 @@ class TrendAnalysis:
                 warnings.warn(
                     "ad_hoc_filter index does not match index of other filters; missing "
                     "values will be set to True (kept). Align the index with the index "
-                    "of the filter_components attribute to prevent this warning"
+                    "of the filter_components attribute to prevent this warning",
+                    stacklevel=3,
                 )
                 ad_hoc_filter = ad_hoc_filter.reindex(filter_components.index)
                 ad_hoc_filter.loc[ad_hoc_filter.isnull()] = True
@@ -707,7 +712,8 @@ class TrendAnalysis:
 
             if ad_hoc_filter_aggregated.isnull().any():
                 warnings.warn(
-                    "aggregated ad_hoc_filter contains NaN values; setting to False (excluding)"
+                    "aggregated ad_hoc_filter contains NaN values; setting to False (excluding)",
+                    stacklevel=3,
                 )
                 ad_hoc_filter_aggregated.loc[ad_hoc_filter_aggregated.isnull()] = False
 
@@ -718,7 +724,8 @@ class TrendAnalysis:
                     "Aggregated ad_hoc_filter index does not match index of other "
                     "filters; missing values will be set to True (kept). "
                     "Align the index with the index of the "
-                    "filter_components_aggregated attribute to prevent this warning"
+                    "filter_components_aggregated attribute to prevent this warning",
+                    stacklevel=3,
                 )
                 ad_hoc_filter_aggregated = ad_hoc_filter_aggregated.reindex(
                     filter_components_aggregated.index
@@ -961,7 +968,8 @@ class TrendAnalysis:
                 """Clear-sky analysis is performed but `power_expected` was passed in by user.
                    In this case, the power normalization is not tied to the modeled clear-sky
                    irradiance and the clear-sky workflow may provide similar results to
-                   the sensor workflow."""
+                   the sensor workflow.""",
+                stacklevel=2,
             )
         self._filter(cs_normalized, "clearsky")
         cs_aggregated, cs_aggregated_insolation = self._aggregate(

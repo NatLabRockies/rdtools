@@ -391,7 +391,8 @@ def _format_clipping_time_series(power_ac, mounting_type):
         warnings.warn(
             "Function expects timestamps in local time. "
             "For best results pass a time-zone-localized "
-            "time series localized to the correct local time zone."
+            "time series localized to the correct local time zone.",
+            stacklevel=3,
         )
     # Check the other input variables to ensure that they are the
     # correct format
@@ -448,7 +449,8 @@ def _check_data_sampling_frequency(power_ac):
             "Variable sampling frequency across time series. "
             "Less than 95% of the time series is sampled at the "
             "same interval. This function was not tested "
-            "on variable frequency data--use at your own risk!"
+            "on variable frequency data--use at your own risk!",
+            stacklevel=3,
         )
     return
 
@@ -846,30 +848,31 @@ def xgboost_clip_filter(power_ac, mounting_type="fixed"):
         power_ac_df["mounting_config"] == "fixed", "mounting_config_bool"
     ] = 0
     # Subset the dataframe to only include model inputs
-    power_ac_df = power_ac_df[
-        [
-            "first_order_derivative_backward",
-            "first_order_derivative_forward",
-            "first_order_derivative_backward_rolling_avg",
-            "first_order_derivative_forward_rolling_avg",
-            "sampling_frequency",
-            "mounting_config_bool",
-            "scaled_value",
-            "rolling_average",
-            "daily_max",
-            "percent_daily_max",
-            "deriv_max",
-            "deriv_backward_rolling_stdev",
-            "deriv_backward_rolling_mean",
-            "deriv_backward_rolling_median",
-            "deriv_backward_rolling_min",
-            "deriv_backward_rolling_max",
-        ]
-    ].dropna()
+    feature_cols = [
+        "first_order_derivative_backward",
+        "first_order_derivative_forward",
+        "first_order_derivative_backward_rolling_avg",
+        "first_order_derivative_forward_rolling_avg",
+        "sampling_frequency",
+        "mounting_config_bool",
+        "scaled_value",
+        "rolling_average",
+        "daily_max",
+        "percent_daily_max",
+        "deriv_max",
+        "deriv_backward_rolling_stdev",
+        "deriv_backward_rolling_mean",
+        "deriv_backward_rolling_median",
+        "deriv_backward_rolling_min",
+        "deriv_backward_rolling_max",
+    ]
+    power_ac_df = power_ac_df[feature_cols].dropna()
     # Run the power_ac_df dataframe through the XGBoost ML model,
-    # and return boolean outputs
+    # and return boolean outputs. Use DMatrix with explicit feature names
+    # for xgboost 3.x compatibility.
+    dmatrix = xgb.DMatrix(power_ac_df, feature_names=feature_cols)
     xgb_predictions = pd.Series(
-        xgboost_clipping_model.predict(power_ac_df).astype(bool)
+        (xgboost_clipping_model.get_booster().predict(dmatrix) > 0.5).astype(bool)
     )
     # Add datetime as an index
     xgb_predictions.index = power_ac_df.index

@@ -768,6 +768,8 @@ def soiling_parameters(basic_parameters, soiling_normalized_daily, cs_input):
 def soiling_analysis_sensor(soiling_parameters):
     soiling_analysis = TrendAnalysis(**soiling_parameters)
     np.random.seed(1977)
+    # Disable clip_filter for daily data (doesn't apply to aggregated data)
+    del soiling_analysis.filter_params["clip_filter"]
     soiling_analysis.sensor_analysis(analyses=["srr_soiling"], srr_kwargs={"reps": 10})
     return soiling_analysis
 
@@ -778,6 +780,8 @@ def soiling_analysis_clearsky(soiling_parameters, cs_input):
     soiling_analysis.set_clearsky(**cs_input)
     np.random.seed(1977)
     soiling_analysis.filter_params["clearsky_filter"] = {"model": "csi"}
+    # Disable clip_filter for daily data (doesn't apply to aggregated data)
+    del soiling_analysis.filter_params["clip_filter"]
     with pytest.warns(UserWarning, match="20% or more of the daily data"):
         soiling_analysis.clearsky_analysis(
             analyses=["srr_soiling"], srr_kwargs={"reps": 10}
@@ -791,15 +795,15 @@ def test_srr_soiling(soiling_analysis_sensor):
     ci = srr_results["sratio_confidence_interval"]
     renorm_factor = srr_results["calc_info"]["renormalizing_factor"]
     print(f"soiling ci:{ci}")
-    assert 0.965 == pytest.approx(
+    assert 0.967 == pytest.approx(
         sratio, abs=1e-3
     ), "Soiling ratio different from expected value in TrendAnalysis.srr_soiling"
-    assert [0.96, 0.97] == pytest.approx(
+    assert [0.966, 0.968] == pytest.approx(
         ci, abs=1e-2
     ), "Soiling confidence interval different from expected value in TrendAnalysis.srr_soiling"
     assert pytest.approx(
         renorm_factor, abs=1e-3
-    ) == 0.977, "Renormalization factor different from expected value in TrendAnalysis.srr_soiling"
+    ) == 0.982, "Renormalization factor different from expected value in TrendAnalysis.srr_soiling"
 
 
 def test_plot_degradation(sensor_analysis):
@@ -863,6 +867,27 @@ def test_errors(sensor_parameters, clearsky_analysis):
     del clearsky_analysis.pvlib_location
     with pytest.raises(ValueError, match="pvlib location must be provided"):
         clearsky_analysis._clearsky_preprocess()
+
+
+def test_clip_filter_frequency_error(basic_parameters):
+    # Test that clip_filter raises an error when data frequency > 60 minutes
+    times = pd.date_range("2019-01-01", "2022-01-01", freq="2h", tz="UTC")
+    pv = pd.Series(1.0, index=times)
+    poa_global = pd.Series(1000.0, index=times)
+    temperature_ambient = pd.Series(25.0, index=times)
+
+    rd_analysis = TrendAnalysis(
+        pv,
+        poa_global=poa_global,
+        temperature_ambient=temperature_ambient,
+        pv_input="energy",
+        **basic_parameters,
+    )
+    rd_analysis.filter_params = {"clip_filter": {}}
+    with pytest.raises(
+        ValueError, match="clip_filter requires time series frequency of 60 minutes"
+    ):
+        rd_analysis.sensor_analysis(analyses=["yoy_degradation"])
 
 
 @pytest.mark.parametrize(
