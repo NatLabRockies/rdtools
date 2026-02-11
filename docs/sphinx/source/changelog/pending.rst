@@ -72,6 +72,10 @@ Documentation
   -0.0034 1/K to reflect modern silicon PV module specifications. Updated notebooks include
   ``degradation_and_soiling_example.ipynb``, ``TrendAnalysis_example.ipynb``, and
   ``TrendAnalysis_example_NSRDB.ipynb``.
+* Added ``stacklevel`` parameter to all ``warnings.warn()`` calls so that warning
+  messages point to user code rather than rdtools internals. Affected modules:
+  ``analysis_chains``, ``filtering``, ``soiling``, ``plotting``, ``normalization``,
+  ``availability``, and ``clearsky_temperature``.
 
 
 Warnings

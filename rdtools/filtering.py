@@ -391,7 +391,8 @@ def _format_clipping_time_series(power_ac, mounting_type):
         warnings.warn(
             "Function expects timestamps in local time. "
             "For best results pass a time-zone-localized "
-            "time series localized to the correct local time zone."
+            "time series localized to the correct local time zone.",
+            stacklevel=3,
         )
     # Check the other input variables to ensure that they are the
     # correct format
@@ -448,7 +449,8 @@ def _check_data_sampling_frequency(power_ac):
             "Variable sampling frequency across time series. "
             "Less than 95% of the time series is sampled at the "
             "same interval. This function was not tested "
-            "on variable frequency data--use at your own risk!"
+            "on variable frequency data--use at your own risk!",
+            stacklevel=3,
         )
     return
 
