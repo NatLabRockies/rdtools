@@ -1,3 +1,29 @@
+****************************
+v3.1.0 (February XX, 2026)
+****************************
+
+Enhancements
+------------
+* Modified ``TrendAnalysis._filter()`` to allow ``clip_filter`` to use ``pv_energy``
+  when ``pv_power`` is not available. This enables clipping detection for energy-based
+  analyses with sub-hourly data.
+* Added frequency validation for ``clip_filter`` in ``TrendAnalysis._filter()`` that
+  raises a ``ValueError`` if the time series has a median time step greater than 60
+  minutes, as clipping detection requires higher resolution data.
+
+
+Documentation
+-------------
+* Updated temperature coefficient (``gamma_pdc``) in PVDAQ example notebooks from -0.005 to
+  -0.0034 1/K to reflect modern silicon PV module specifications. Updated notebooks include
+  ``degradation_and_soiling_example.ipynb``, ``TrendAnalysis_example.ipynb``, and
+  ``TrendAnalysis_example_NSRDB.ipynb``.
+* Added ``stacklevel`` parameter to all ``warnings.warn()`` calls so that warning
+  messages point to user code rather than rdtools internals. Affected modules:
+  ``analysis_chains``, ``filtering``, ``soiling``, ``plotting``, ``normalization``,
+  ``availability``, and ``clearsky_temperature``.
+
+
 Requirements
 ------------
 * Removed pvlib version restrictions in setup.py. Previously "pvlib >= 0.11.0, <0.12.0", now "pvlib".
@@ -28,15 +54,6 @@ Requirements
 * Updated pyparsing version in requirements.txt from 3.1.2 to 3.2.0 for python 3.13 compatibility.
 * Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
 
-
-Deprecations
-------------
-* Removed deprecated ``normalization.delta_index`` function (deprecated in v2.0.0).
-  The private ``_delta_index`` helper remains available for internal use.
-* Removed deprecated ``normalization.check_series_frequency`` function (deprecated in v2.0.0).
-  The private ``_check_series_frequency`` helper remains available for internal use.
-
-
 Bug Fixes
 ---------
 * Fixed pandas 3.0 compatibility in ``normalization.py`` by using ``.total_seconds()``
@@ -56,28 +73,14 @@ Bug Fixes
   aggregation methods.
 
 
-Enhancements
-------------
-* Modified ``TrendAnalysis._filter()`` to allow ``clip_filter`` to use ``pv_energy``
-  when ``pv_power`` is not available. This enables clipping detection for energy-based
-  analyses with sub-hourly data.
-* Added frequency validation for ``clip_filter`` in ``TrendAnalysis._filter()`` that
-  raises a ``ValueError`` if the time series has a median time step greater than 60
-  minutes, as clipping detection requires higher resolution data.
-
-
-Documentation
--------------
-* Updated temperature coefficient (``gamma_pdc``) in PVDAQ example notebooks from -0.005 to
-  -0.0034 1/K to reflect modern silicon PV module specifications. Updated notebooks include
-  ``degradation_and_soiling_example.ipynb``, ``TrendAnalysis_example.ipynb``, and
-  ``TrendAnalysis_example_NSRDB.ipynb``.
-* Added ``stacklevel`` parameter to all ``warnings.warn()`` calls so that warning
-  messages point to user code rather than rdtools internals. Affected modules:
-  ``analysis_chains``, ``filtering``, ``soiling``, ``plotting``, ``normalization``,
-  ``availability``, and ``clearsky_temperature``.
-
-
 Warnings
 --------
 * Added filter to ignore deprecation warning related to IPyNbFile in setup.cfg.
+
+
+Deprecations
+------------
+* Removed deprecated ``normalization.delta_index`` function (deprecated in v2.0.0).
+  The private ``_delta_index`` helper remains available for internal use.
+* Removed deprecated ``normalization.check_series_frequency`` function (deprecated in v2.0.0).
+  The private ``_check_series_frequency`` helper remains available for internal use.
