@@ -2,8 +2,8 @@ Requirements
 ------------
 * Removed pvlib version restrictions in setup.py. Previously "pvlib >= 0.11.0, <0.12.0", now "pvlib".
 * Updated pvlib version in requirements.txt from 0.11.0 to 0.14.0
-* Added pandas upper version restriction in setup.py. Now "pandas >= 1.4.4, <3.0.0".
-* Added numpy upper version restriction in setup.py. Now "numpy >= 1.22.4, <2.3.0".
+* Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
+* Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
 * Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compativility.
 * Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
 * Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.
@@ -27,6 +27,33 @@ Requirements
 * Updated Pillow version in requirements.txt from 10.4.0 to 11.0.0 for python 3.13 compatibility.
 * Updated pyparsing version in requirements.txt from 3.1.2 to 3.2.0 for python 3.13 compatibility.
 * Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
+
+
+Deprecations
+------------
+* Removed deprecated ``normalization.delta_index`` function (deprecated in v2.0.0).
+  The private ``_delta_index`` helper remains available for internal use.
+* Removed deprecated ``normalization.check_series_frequency`` function (deprecated in v2.0.0).
+  The private ``_check_series_frequency`` helper remains available for internal use.
+
+
+Bug Fixes
+---------
+* Fixed pandas 3.0 compatibility in ``normalization.py`` by using ``.total_seconds()``
+  instead of ``.view('int64')`` with hardcoded nanosecond divisors. Pandas 3.0 changed
+  the default datetime resolution from nanoseconds (``datetime64[ns]``) to microseconds
+  (``datetime64[us]``). Affected functions: ``_delta_index``, ``_t_step_nanoseconds``,
+  ``_aggregate``, ``_interpolate_series``.
+* Fixed datetime resolution preservation in ``normalization.interpolate()`` to ensure
+  output maintains the same resolution as input (e.g., ``datetime64[us]``).
+* Fixed numpy 2.x compatibility in ``soiling.py`` by using ``.item()`` and explicit
+  indexing to extract scalar values from numpy arrays, as implicit array-to-scalar
+  conversion is deprecated.
+* Fixed xgboost 3.x compatibility in ``filtering.xgboost_clip_filter()`` by using
+  ``xgb.DMatrix`` with explicit feature names for model prediction.
+* Fixed pandas 4.0 deprecation warnings by changing lowercase ``'d'`` to uppercase
+  ``'D'`` in Timedelta strings and using ``axis=`` keyword argument for DataFrame
+  aggregation methods.
 
 
 Enhancements

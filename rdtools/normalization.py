@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import minimize
 import warnings
-from rdtools._deprecation import deprecated
 
 
 class ConvergenceError(Exception):
@@ -175,44 +174,6 @@ def normalize_with_pvwatts(energy, pvwatts_kws):
     return energy_normalized, insolation
 
 
-def _delta_index(series):
-    '''
-    Takes a pandas series with a DatetimeIndex as input and
-    returns (time step sizes, average time step size) in hours
-
-    Parameters
-    ----------
-    series : pandas.Series
-        A pandas timeseries
-
-    Returns
-    -------
-    deltas : pandas.Series
-        A timeseries representing the timestep sizes of ``series``
-    mean : float
-        The average timestep
-    '''
-
-    if series.index.freq is None:
-        # If there is no frequency information, explicitly calculate interval
-        # sizes. Length of each interval calculated by using 'int64' to convert
-        # to nanoseconds.
-        hours = pd.Series(series.index.view('int64') / (10.0**9 * 3600.0))
-        hours.index = series.index
-        deltas = hours.diff()
-    else:
-        # If there is frequency information, pandas shift can be used to gain
-        # a meaningful interval for the first element of the timeseries
-        # Length of each interval calculated by using 'int64' to convert to
-        # nanoseconds.
-        deltas = (series.index - series.index.shift(-1)).view('int64') / \
-                 (10.0**9 * 3600.0)
-    return deltas, np.mean(deltas[~np.isnan(deltas)])
-
-
-delta_index = deprecated('2.0.0', removal='3.0.0')(_delta_index)
-
-
 def irradiance_rescale(irrad, irrad_sim, max_iterations=100,
                        method='iterative', convergence_threshold=1e-6):
     '''
@@ -335,7 +296,36 @@ def _check_series_frequency(series, series_description):
     return freq
 
 
-check_series_frequency = deprecated('2.0.0', removal='3.0.0')(_check_series_frequency)
+def _delta_index(series):
+    '''
+    Takes a pandas series with a DatetimeIndex as input and
+    returns (time step sizes, average time step size) in hours.
+
+    Parameters
+    ----------
+    series : pandas.Series
+        A pandas timeseries
+
+    Returns
+    -------
+    deltas : pandas.Series
+        A timeseries representing the timestep sizes of ``series``
+    mean : float
+        The average timestep
+    '''
+    # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
+    if series.index.freq is None:
+        # If there is no frequency information, explicitly calculate interval sizes
+        deltas = pd.Series(series.index).diff().dt.total_seconds() / 3600.0
+        deltas.index = series.index
+    else:
+        # If there is frequency information, pandas shift can be used to gain
+        # a meaningful interval for the first element of the timeseries
+        deltas = pd.Series(
+            (series.index - series.index.shift(-1)).total_seconds() / 3600.0,
+            index=series.index
+        )
+    return deltas, deltas.mean()
 
 
 def _t_step_nanoseconds(time_series):
@@ -343,9 +333,9 @@ def _t_step_nanoseconds(time_series):
     return a series of right labeled differences in the index of time_series
     in nanoseconds
     '''
-    t_steps = np.diff(time_series.index.view('int64')).astype('float')
-    t_steps = np.insert(t_steps, 0, np.nan)
-    t_steps = pd.Series(index=time_series.index, data=t_steps)
+    # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
+    t_steps = pd.Series(time_series.index).diff().dt.total_seconds() * 1e9
+    t_steps.index = time_series.index
     return t_steps
 
 
@@ -485,17 +475,21 @@ def _aggregate(time_series, target_frequency, max_timedelta, series_type):
     union_index = time_series.index.union(output_dummy.index)
     time_series = time_series.dropna()
 
+    # Return NaN series if no valid data remains after dropna
+    if len(time_series) == 0:
+        return pd.Series(np.nan, index=output_dummy.index)
+
     values = time_series.values
 
     # Identify gaps (including from nans) bigger than max_time_delta
-    timestamps = time_series.index.view('int64')
-    timestamps = pd.Series(timestamps, index=time_series.index)
-    t_diffs = timestamps.diff()
+    # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
+    t_diffs = pd.Series(time_series.index).diff().dt.total_seconds() * 1e9
+    t_diffs.index = time_series.index
     # Keep track of the gap size but with refilled NaNs and new
     # timestamps from target freq
     t_diffs = t_diffs.reindex(union_index, method='bfill')
 
-    max_interval_nanoseconds = max_timedelta.total_seconds() * 10.0**9
+    max_interval_nanoseconds = max_timedelta.total_seconds() * 1e9
 
     gap_mask = t_diffs > max_interval_nanoseconds
     if time_series.index[0] != union_index[0]:
@@ -503,8 +497,8 @@ def _aggregate(time_series, target_frequency, max_timedelta, series_type):
         gap_mask[:time_series.index[0]] = True
 
     time_series = time_series.reindex(union_index)
-    t_diffs = np.diff(time_series.index.view('int64'))
-    t_diffs_hours = t_diffs / 10**9 / 3600.0
+    # Use total_seconds() for resolution-agnostic calculation
+    t_diffs_hours = pd.Series(time_series.index).diff().dt.total_seconds().values[1:] / 3600.0
     if series_type == 'instantaneous':
         # interpolate with trapz sum
         time_series = time_series.interpolate(method='time')
@@ -574,39 +568,41 @@ def _interpolate_series(time_series, target_index, max_timedelta=None,
     df = pd.DataFrame(time_series)
     df = df.dropna()
 
-    # convert to integer index and calculate the size of gaps in input
-    timestamps = df.index.view("int64").copy()
+    # convert to numeric index (seconds since epoch) for interpolation
+    # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
+    epoch = pd.Timestamp('1970-01-01', tz=df.index.tz)
+    timestamps = (df.index - epoch).total_seconds().values
     df["timestamp"] = timestamps
-    df["gapsize_ns"] = df["timestamp"].diff()
+    df["gapsize_s"] = df["timestamp"].diff()
     df.index = timestamps
 
-    valid_indput_index = df.index.copy()
+    valid_input_index = df.index.copy()
 
     if max_timedelta is None:
-        max_interval_nanoseconds = 2 * df['gapsize_ns'].median()
+        max_interval_seconds = 2 * df['gapsize_s'].median()
     else:
-        max_interval_nanoseconds = max_timedelta.total_seconds() * 10.0**9
+        max_interval_seconds = max_timedelta.total_seconds()
 
-    fraction_excluded = (df['gapsize_ns'] > max_interval_nanoseconds).mean()
+    fraction_excluded = (df['gapsize_s'] > max_interval_seconds).mean()
     if fraction_excluded > warning_threshold:
         warnings.warn("Fraction of excluded data "
                       f"({100*fraction_excluded:0.02f}%) "
                       "exceeded threshold",
                       UserWarning)
 
-    # put data on index that includes both original and target indicies
-    target_timestamps = pd.Index(target_index.view('int64'))
+    # put data on index that includes both original and target indices
+    target_timestamps = pd.Index((target_index - epoch).total_seconds())
     union_index = df.index.append(target_timestamps)
     union_index = union_index.drop_duplicates(keep='first')
     df = df.reindex(union_index)
     df = df.sort_index()
 
     # calculate the gap size in the original data (timestamps)
-    df['gapsize_ns'] = df['gapsize_ns'].bfill()
-    df.loc[valid_indput_index, 'gapsize_ns'] = 0
+    df['gapsize_s'] = df['gapsize_s'].bfill()
+    df.loc[valid_input_index, 'gapsize_s'] = 0
 
     # perform the interpolation when the max gap size criterion is satisfied
-    df_valid = df[df['gapsize_ns'] <= max_interval_nanoseconds].copy()
+    df_valid = df[df['gapsize_s'] <= max_interval_seconds].copy()
     df_valid['interpolated_data'] = \
         df_valid['data'].interpolate(method='index')
 
@@ -615,8 +611,8 @@ def _interpolate_series(time_series, target_index, max_timedelta=None,
     out = pd.Series(df['interpolated_data'])
     out = out.loc[target_timestamps]
     out.name = original_name
-    out.index = pd.to_datetime(out.index, utc=True).tz_convert(target_index.tz)
-    out = out.reindex(target_index)
+    # Convert seconds back to datetime, matching target_index
+    out.index = target_index
 
     return out
 
@@ -665,6 +661,11 @@ def interpolate(time_series, target, max_timedelta=None, warning_threshold=0.1):
         target_index = pd.date_range(time_series.index.min(),
                                      time_series.index.max(),
                                      freq=target)
+        # Preserve the input series' datetime resolution (e.g., 'us' vs 'ns')
+        if hasattr(time_series.index, 'unit'):
+            input_unit = time_series.index.unit
+            if hasattr(target_index, 'unit') and target_index.unit != input_unit:
+                target_index = target_index.as_unit(input_unit)
 
     if (time_series.index.tz is None) ^ (target_index.tz is None):
         raise ValueError('Either time_series or target is time-zone aware but '
