@@ -12,7 +12,7 @@ numpy==2.1.1
 packaging==26.0
 pandas==2.2.3
 patsy==1.0.0
-Pillow==11.0.0
+Pillow==12.1.1
 plotly==6.1.1
 pvlib==0.14.0
 pyparsing==3.2.0
