@@ -4,8 +4,6 @@ Requirements
 * Updated pvlib version in requirements.txt from 0.11.0 to 0.14.0
 * Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
 * Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
-* Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
-* Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
 * Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compativility.
 * Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
 * Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.
@@ -66,6 +64,14 @@ Enhancements
 * Added frequency validation for ``clip_filter`` in ``TrendAnalysis._filter()`` that
   raises a ``ValueError`` if the time series has a median time step greater than 60
   minutes, as clipping detection requires higher resolution data.
+
+
+Documentation
+-------------
+* Updated temperature coefficient (``gamma_pdc``) in PVDAQ example notebooks from -0.005 to
+  -0.0034 1/K to reflect modern silicon PV module specifications. Updated notebooks include
+  ``degradation_and_soiling_example.ipynb``, ``TrendAnalysis_example.ipynb``, and
+  ``TrendAnalysis_example_NSRDB.ipynb``.
 * Added ``stacklevel`` parameter to all ``warnings.warn()`` calls so that warning
   messages point to user code rather than rdtools internals. Affected modules:
   ``analysis_chains``, ``filtering``, ``soiling``, ``plotting``, ``normalization``,
