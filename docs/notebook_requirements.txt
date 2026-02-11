@@ -15,7 +15,7 @@ ipython==8.26.0
 ipython-genutils==0.2.0
 ipywidgets==8.1.3
 jedi==0.19.1
-Jinja2==3.1.5
+Jinja2==3.1.6
 jsonschema==4.23.0
 jupyter==1.0.0
 jupyter-client==8.6.2
@@ -29,7 +29,7 @@ nbclient==0.10.0
 nbconvert==7.16.4
 nbformat==5.10.4
 nest-asyncio==1.6.0
-notebook==7.2.1
+notebook==7.2.2
 numexpr==2.10.1
 pandocfilters==1.5.1
 parso==0.8.4
@@ -48,7 +48,7 @@ soupsieve==2.6
 terminado==0.18.1
 testpath==0.6.0
 tinycss2==1.3.0
-tornado==6.4.2
+tornado==6.5.1
 traitlets==5.14.3
 wcwidth==0.2.13
 webencodings==0.5.1
