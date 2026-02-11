@@ -133,8 +133,6 @@ Normalization
    normalize_with_expected_power
    normalize_with_pvwatts
    pvwatts_dc_power
-   delta_index
-   check_series_frequency
 
 
 Aggregation
