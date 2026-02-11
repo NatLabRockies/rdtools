@@ -276,7 +276,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     # Auto center
     if recenter:
         start = energy_normalized.index[0]
-        oneyear = start + pd.Timedelta('364d')
+        oneyear = start + pd.Timedelta('364D')
         renorm = utilities.robust_median(energy_normalized[start:oneyear])
     else:
         renorm = 1.0
@@ -303,9 +303,8 @@ def degradation_year_on_year(energy_normalized, recenter=True,
                                 )
         df = pd.concat([df, df_temp], ignore_index=True)
 
-    df['time_diff_years'] = (df.dt - df.dt_left) / pd.Timedelta('365d')
+    df['time_diff_years'] = (df.dt - df.dt_left) / pd.Timedelta('365D')
     df['yoy'] = 100.0 * (df.energy - df.energy_left) / (df.time_diff_years)
-    # df.index = df.dt
 
     yoy_result = df.yoy.dropna()
 

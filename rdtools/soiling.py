@@ -27,7 +27,7 @@ lowess = sm.nonparametric.lowess
 warnings.warn(
     'The soiling module is currently experimental. The API, results, '
     'and default behaviors may change in future releases (including MINOR '
-    'and PATCH releases) as the code matures.'
+    'and PATCH releases) as the code matures.', stacklevel=2
 )
 
 
@@ -123,7 +123,8 @@ class SRRAnalysis():
             warnings.warn('An even value of day_scale was passed. An odd value is '
                           'recommended, otherwise, consecutive days may be erroneously '
                           'flagged as cleaning events. '
-                          'See https://github.com/NREL/rdtools/issues/189')
+                          'See https://github.com/NREL/rdtools/issues/189',
+                          stacklevel=2)
 
         df = self.pm.to_frame()
         df.columns = ['pi']
@@ -382,7 +383,8 @@ class SRRAnalysis():
                               'validity criteria such as increasing "max_relative_slope_error" '
                               'and/or "max_negative_step" and/or decreasing "min_interval_length".'
                               ' Alternatively, consider using method="perfect_clean". For more'
-                              ' info see https://github.com/NREL/rdtools/issues/272'
+                              ' info see https://github.com/NREL/rdtools/issues/272',
+                              stacklevel=2
                               )
         monte_losses = []
         random_profiles = []
@@ -906,7 +908,8 @@ def annual_soiling_ratios(stochastic_soiling_profiles,
             'The indexes of stochastic_soiling_profiles are not entirely '
             'contained within the index of insolation_daily. Every day in '
             'stochastic_soiling_profiles should be represented in '
-            'insolation_daily. This may cause erroneous results.')
+            'insolation_daily. This may cause erroneous results.',
+            stacklevel=2)
 
     insolation_daily = insolation_daily.reindex(all_profiles.index)
 
@@ -1510,8 +1513,8 @@ class CODSAnalysis():
                   '{:.3e}'.format(adf_res[1]))
 
         # Check size of soiling signal vs residuals
-        SR_amp = float(np.diff(df_out.soiling_ratio.quantile([.1, .9])))
-        residuals_amp = float(np.diff(df_out.residuals.quantile([.1, .9])))
+        SR_amp = float(np.diff(df_out.soiling_ratio.quantile([.1, .9]))[0])
+        residuals_amp = float(np.diff(df_out.residuals.quantile([.1, .9]))[0])
         soiling_signal_strength = SR_amp / residuals_amp
         if soiling_signal_strength < soiling_significance:
             if verbose:
@@ -1889,11 +1892,11 @@ class CODSAnalysis():
         # Save best estimate and bootstrapped estimates of SR and soiling rates
         df_out.soiling_ratio = df_out.soiling_ratio.clip(lower=0, upper=1)
         df_out.loc[df_out.soiling_ratio.diff() == 0, 'soiling_rates'] = 0
-        df_out['bt_soiling_ratio'] = (concat_SR * weights).sum(1)
-        df_out['bt_soiling_rates'] = (concat_r_s * weights).sum(1)
+        df_out['bt_soiling_ratio'] = (concat_SR * weights).sum(axis=1)
+        df_out['bt_soiling_rates'] = (concat_r_s * weights).sum(axis=1)
 
         # Set probability of cleaning events
-        df_out.cleaning_events = (concat_ce * weights).sum(1)
+        df_out.cleaning_events = (concat_ce * weights).sum(axis=1)
 
         # Find degradation rates
         self.degradation = [np.dot(bt_deg, weights),
@@ -1908,7 +1911,7 @@ class CODSAnalysis():
                              np.quantile(bt_SL, ci_high_edge)]
 
         # Save "confidence intervals" for seasonal component
-        df_out.seasonal_component = (seasonal_samples * weights).sum(1)
+        df_out.seasonal_component = (seasonal_samples * weights).sum(axis=1)
         df_out['seasonal_low'] = seasonal_samples.quantile(ci_low_edge, 1)
         df_out['seasonal_high'] = seasonal_samples.quantile(ci_high_edge, 1)
 
@@ -2216,7 +2219,7 @@ class CODSAnalysis():
             # The median zs of the week after the cleaning event
             z_med = rolling_median_local[HW+3]
             # Set control input this future median
-            u[0] = z_med - np.dot(f.H, np.dot(f.F, f.x))
+            u[0] = z_med - np.dot(f.H, np.dot(f.F, f.x)).item()
             # If the change is bigger than the measurement noise:
             if np.abs(u[0]) > np.sqrt(f.R)/2:
                 index_dummy = [n+3 for n in range(window_size-HW-1)
@@ -2534,7 +2537,7 @@ def _make_seasonal_samples(list_of_SCs, sample_nr=10, min_multiplier=0.5,
                 year=signal.index.year
             ).pivot(index='doy', columns='year', values='values')
         # We will use the median signal through all the years...
-        median_signal = year_matrix.median(1)
+        median_signal = year_matrix.median(axis=1)
         for j in range(sample_nr):
             # Generate random multiplier and phase shift
             multiplier = np.random.uniform(min_multiplier, max_multiplier)
@@ -2578,7 +2581,7 @@ def _force_periodicity(in_signal, signal_index, out_index):
         year_matrix[year] = \
             signal.loc[str(year)].reindex(dates_in_year).values[:365]
     # We will use the median signal through all the years...
-    median_signal = year_matrix.median(1)
+    median_signal = year_matrix.median(axis=1)
     # The output is the median signal broadcasted to the whole time series
     output = pd.Series(
         index=out_index,
