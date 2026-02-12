@@ -449,7 +449,7 @@ def _avg_timestamp_old_Pandas(dt, dt_left):
 
     # conversion from dates to seconds since epoch (unix time)
     def to_unix(s):
-        if type(s) is pd.Timestamp:
+        if isinstance(s, pd.Timestamp):
             return calendar.timegm(s.timetuple())
         else:
             return pd.NaT
