@@ -22,8 +22,22 @@ Enhancements
   properly handles points used odd vs even number of times (not just 0, 1, 2).
   (:issue:`394`)
 
+Testing
+-------
+* Added tests for error handling paths in :py:mod:`~rdtools.analysis_chains`:
+  ``filter_params`` and ``filter_params_aggregated`` setter validation,
+  ``clearsky_rescale_index_mismatch``, ``poa_filter_without_poa``,
+  ``tcell_filter_without_temperature``, ``hour_angle_filter_without_location``,
+  ``clearsky_filter_without_poa``, and ``degradation_timeseries_plot_invalid_case``.
+* Added tests for error handling paths in :py:mod:`~rdtools.degradation`:
+  ``classical_decomposition`` missing/irregular data, ``year_on_year`` circular block
+  validation, no valid pairs error, and ``_mk_test`` edge cases (no trend, ties,
+  decreasing).
+* Set matplotlib backend to ``Agg`` in test ``conftest.py`` to avoid tkinter issues.
+
 
 Contributors
 ------------
 * Chris Deline (:ghuser:`cdeline`)
+* Martin Springer (:ghuser:`martin-springer`)
 
