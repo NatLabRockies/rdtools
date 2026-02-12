@@ -1018,3 +1018,90 @@ def test_invalid_filter_params_aggregated(
         KeyError, match=f"Key '{filter_param_aggregated}' is not a valid filter parameter."
     ):
         sensor_analysis.filter_params_aggregated[filter_param_aggregated] = {}
+
+
+def test_filter_params_setter_non_dict(sensor_parameters):
+    """Test that filter_params setter raises error for non-dict input."""
+    rd_analysis = TrendAnalysis(**sensor_parameters)
+    with pytest.raises(ValueError, match="must be a dictionary"):
+        rd_analysis.filter_params = "not a dict"
+
+
+def test_filter_params_aggregated_setter_non_dict(sensor_parameters):
+    """Test that filter_params_aggregated setter raises error for non-dict."""
+    rd_analysis = TrendAnalysis(**sensor_parameters)
+    with pytest.raises(ValueError, match="must be a dictionary"):
+        rd_analysis.filter_params_aggregated = "not a dict"
+
+
+def test_clearsky_rescale_index_mismatch(sensor_parameters, cs_input):
+    """Test that rescale=True raises error when indices don't match."""
+    rd_analysis = TrendAnalysis(**sensor_parameters)
+    rd_analysis.set_clearsky(**cs_input)
+
+    # Create explicit times that don't match the poa_global index
+    mismatched_times = pd.date_range(
+        "2020-01-01", periods=100, freq="h", tz=cs_input["pvlib_location"].tz
+    )
+
+    with pytest.raises(ValueError, match="rescale=True can only be used"):
+        rd_analysis._calc_clearsky_poa(times=mismatched_times, rescale=True)
+
+
+def test_poa_filter_without_poa(sensor_parameters):
+    """Test that poa_filter raises error when poa is not available."""
+    params = sensor_parameters.copy()
+    rd_analysis = TrendAnalysis(**params)
+    rd_analysis.filter_params = {"poa_filter": {}}
+    # Set poa_global to None after initialization
+    rd_analysis.poa_global = None
+    # Need power_expected to get past other checks
+    rd_analysis.power_expected = sensor_parameters["pv"]
+
+    with pytest.raises(ValueError, match="poa_global must be available"):
+        rd_analysis.sensor_analysis()
+
+
+def test_tcell_filter_without_temperature(sensor_parameters):
+    """Test that tcell_filter raises error when cell temp not available."""
+    params = sensor_parameters.copy()
+    params["temperature_ambient"] = None
+    params["temperature_cell"] = None
+    rd_analysis = TrendAnalysis(**params)
+    rd_analysis.poa_global = sensor_parameters["poa_global"]
+    rd_analysis.filter_params = {"tcell_filter": {}}
+
+    # Need power_expected to skip thermal calculation
+    rd_analysis.power_expected = sensor_parameters["pv"]
+
+    with pytest.raises(ValueError, match="Cell temperature must be available"):
+        rd_analysis.sensor_analysis()
+
+
+def test_hour_angle_filter_without_location(sensor_parameters):
+    """Test hour_angle_filter raises error without pvlib_location."""
+    rd_analysis = TrendAnalysis(**sensor_parameters)
+    rd_analysis.filter_params = {"hour_angle_filter": {}}
+
+    with pytest.raises(ValueError, match="pvlib location must be provided"):
+        rd_analysis.sensor_analysis()
+
+
+def test_clearsky_filter_without_poa(sensor_parameters, cs_input):
+    """Test clearsky_filter raises error without required poa data."""
+    rd_analysis = TrendAnalysis(**sensor_parameters)
+    rd_analysis.set_clearsky(**cs_input)
+
+    # Store the pv_energy for filtering, then set poa_global to None
+    energy_normalized = rd_analysis.pv_energy.copy()
+    rd_analysis.poa_global = None
+    rd_analysis.filter_params = {"clearsky_filter": {}}
+
+    with pytest.raises(ValueError, match="poa_global and poa_global_clearsky"):
+        rd_analysis._filter(energy_normalized, "clearsky")
+
+
+def test_degradation_timeseries_plot_invalid_case(sensor_analysis):
+    """Test plot_degradation_timeseries raises error for invalid case."""
+    with pytest.raises(ValueError, match="case must be either"):
+        sensor_analysis.plot_degradation_timeseries(case="invalid")
