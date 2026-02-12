@@ -131,4 +131,5 @@ setup(name=DISTNAME,
       url=URL,
       project_urls=PROJECT_URLS,
       classifiers=CLASSIFIERS,
+      python_requires='>=3.10',
       **setuptools_kwargs)
