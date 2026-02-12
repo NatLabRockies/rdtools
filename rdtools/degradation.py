@@ -323,7 +323,8 @@ def degradation_year_on_year(energy_normalized, recenter=True,
                 fill_value=0).groupby(level=0).sum()
     usage_of_points.name = 'usage_of_points'
 
-    if pd.__version__ < '2.0.0':
+    pandas_version = pd.__version__.split(".")
+    if int(pandas_version[0]) < 2:
         # For old Pandas versions < 2.0.0, time columns cannot be averaged
         # with each other, so we use a custom function to calculate center label
         YoY_times['dt_center'] = _avg_timestamp_old_Pandas(YoY_times['dt'], YoY_times['dt_left'])
