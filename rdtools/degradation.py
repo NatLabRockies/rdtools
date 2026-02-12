@@ -437,15 +437,10 @@ def _avg_timestamp_old_Pandas(dt, dt_left):
     '''
     import calendar
 
-    # allow for numeric index
-    try:
-        temp_df = pd.DataFrame({'dt' : dt.dt.tz_localize(None),
-                                'dt_left' : dt_left.dt.tz_localize(None)
-                                }).tz_localize(None)
-    except TypeError:  # in case numeric index passed
-        temp_df = pd.DataFrame({'dt' : dt.dt.tz_localize(None),
-                                'dt_left' : dt_left.dt.tz_localize(None)
-                                })
+    # Remove timezone from datetime values for averaging
+    temp_df = pd.DataFrame(
+        {"dt": dt.dt.tz_localize(None), "dt_left": dt_left.dt.tz_localize(None)}
+    )
 
     # conversion from dates to seconds since epoch (unix time)
     def to_unix(s):
