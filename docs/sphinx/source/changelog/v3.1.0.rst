@@ -53,6 +53,10 @@ Requirements
 * Updated Pillow version in requirements.txt from 10.4.0 to 12.1.1 for python 3.13 compatibility.
 * Updated pyparsing version in requirements.txt from 3.1.2 to 3.2.0 for python 3.13 compatibility.
 * Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
+* Added ``python_requires='>=3.10'`` to ``setup.py`` to enforce minimum Python version
+  at install time, matching the supported Python versions in classifiers.
+* Updated ``nbval`` test dependency from ``<=0.9.6`` to ``>=0.10.0`` to support pytest 7+
+  which requires ``pathlib.Path`` instead of the deprecated ``py.path.local``.
 
 Bug Fixes
 ---------
@@ -75,7 +79,8 @@ Bug Fixes
 
 Warnings
 --------
-* Added filter to ignore deprecation warning related to IPyNbFile in setup.cfg.
+* Removed obsolete ``fspath`` deprecation warning filter from ``setup.cfg`` as it is
+  no longer needed with ``nbval>=0.10.0``.
 
 
 Deprecations
