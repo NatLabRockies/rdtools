@@ -324,6 +324,102 @@ def test_degradation_year_on_year_multi():
     assert len(calc_info['YoY_values']) > len(calc_info0['YoY_values'])
 
 
+def test_classical_decomposition_missing_data():
+    """Test that classical decomposition raises error for missing data."""
+    # Create a regular time series with missing values (NaN)
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series.iloc[100:105] = np.nan  # introduce missing data
+
+    with pytest.raises(ValueError, match="regular time series"):
+        degradation_classical_decomposition(series)
+
+
+def test_classical_decomposition_irregular_frequency():
+    """Test that classical decomposition raises error for irregular frequency."""
+    # Create an irregular time series by sampling randomly
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series = series.sample(frac=0.8, replace=False).sort_index()
+
+    with pytest.raises(ValueError, match="regular time series"):
+        degradation_classical_decomposition(series)
+
+
+def test_yoy_circular_block_no_frequency():
+    """Test circular_block raises error when frequency cannot be inferred."""
+    # Create an irregular time series
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series = series.sample(frac=0.8, replace=False).sort_index()
+
+    with pytest.raises(ValueError, match="fixed frequency"):
+        degradation_year_on_year(series, uncertainty_method="circular_block")
+
+
+def test_yoy_circular_block_too_long():
+    """Test circular_block raises error when block_length is too long."""
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+
+    # block_length must be less than 1/3 of the series length
+    too_long = len(series) // 2
+
+    with pytest.raises(ValueError, match="shorter than a third"):
+        degradation_year_on_year(
+            series, uncertainty_method="circular_block", block_length=too_long
+        )
+
+
+def test_yoy_no_pairs_found():
+    """Test year_on_year raises error when no valid pairs can be formed."""
+    # Create a series that's just over 1 year but with NaN in positions
+    # that prevent any valid year-over-year pairs
+    idx = pd.date_range("2012-01-01", "2014-06-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    # Make all values NaN except first few and last few (too far apart for pairs)
+    series.iloc[10:-10] = np.nan
+
+    with pytest.raises(ValueError, match="no year-over-year"):
+        degradation_year_on_year(series)
+
+
+def test_mk_test_no_trend():
+    """Test Mann-Kendall test with no trend (z == 0 case)."""
+    from rdtools.degradation import _mk_test
+
+    # Constant series should have no trend
+    x = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
+    trend, h, p, z = _mk_test(x)
+
+    assert trend == "no trend"
+    assert z == 0
+    assert not h
+
+
+def test_mk_test_with_ties():
+    """Test Mann-Kendall test with tied values."""
+    from rdtools.degradation import _mk_test
+
+    # Series with ties (repeated values)
+    x = np.array([1, 2, 2, 3, 3, 3, 4, 5])
+    trend, h, p, z = _mk_test(x)
+
+    # Should still detect increasing trend
+    assert trend == "increasing"
+
+
+def test_mk_test_decreasing():
+    """Test Mann-Kendall test with clear decreasing trend."""
+    from rdtools.degradation import _mk_test
+
+    x = np.array([10, 9, 8, 7, 6, 5, 4, 3, 2, 1])
+    trend, h, p, z = _mk_test(x)
+
+    assert trend == "decreasing"
+    assert z < 0
+
+
 if __name__ == '__main__':
     # Initialize logger when run as a module:
     #     python -m tests.degradation_test
