@@ -495,10 +495,8 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, lab
     if ci_color is None:
         ci_color = 'C0'
 
-    if label not in {None, "left", "right", "center"}:
+    if label not in {"left", "right", "center"}:
         raise ValueError(f"Unsupported value {label} for `label`")
-    if label is None:
-        label = "right"
 
     if label == "right":
         center = False

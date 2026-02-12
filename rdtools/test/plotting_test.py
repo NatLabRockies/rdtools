@@ -270,15 +270,14 @@ def test_degradation_timeseries_plot(degradation_info):
     assert_isinstance(result_left, plt.Figure)
     xlim_left = result_left.get_axes()[0].get_xlim()[0]
 
-    # test label=None (should default to 'right')
-    result_none = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False, label=None)
-    assert_isinstance(result_none, plt.Figure)
-    xlim_none = result_none.get_axes()[0].get_xlim()[0]
+    # test default label matches label='right'
+    result_default = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False)
+    xlim_default = result_default.get_axes()[0].get_xlim()[0]
+    assert xlim_default == xlim_right
 
     # Check that the xlim values are offset as expected
     # right > center > left (since offset_days increases)
     assert xlim_right > xlim_center > xlim_left
-    assert xlim_right == xlim_none  # label=None defaults to 'right'
 
     # The expected difference from right to left is 548 days (1.5 yrs), allow 5% tolerance
     expected_diff = 548

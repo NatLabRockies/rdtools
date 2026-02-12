@@ -214,7 +214,7 @@ class DegradationTestCase(unittest.TestCase):
             self.test_corr_energy[input_freq], label='center')
         self.assertAlmostEqual(rd_result[0], 100 * self.rd, places=1)
         rd_result1 = degradation_year_on_year(
-            self.test_corr_energy[input_freq], label=None)
+            self.test_corr_energy[input_freq])
         rd_result2 = degradation_year_on_year(
             self.test_corr_energy[input_freq], label='right')
         pd.testing.assert_index_equal(rd_result1[2]['YoY_values'].index,
@@ -227,6 +227,9 @@ class DegradationTestCase(unittest.TestCase):
         with pytest.raises(ValueError):
             degradation_year_on_year(self.test_corr_energy[input_freq],
                                      label='LEFT')
+        with pytest.raises(ValueError):
+            degradation_year_on_year(self.test_corr_energy[input_freq],
+                                     label=None)
 
     def test_avg_timestamp_old_Pandas(self):
         """Test the _avg_timestamp_old_Pandas function for correct averaging."""

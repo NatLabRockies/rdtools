@@ -242,11 +242,9 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     energy_normalized.name = 'energy'
     energy_normalized.index.name = 'dt'
 
-    if label not in {None, "right", "left", "center"}:
+    if label not in {"right", "left", "center"}:
         raise ValueError(f"Unsupported value {label} for `label`."
                          " Must be 'right', 'left' or 'center'.")
-    if label is None:
-        label = "right"
 
     # Detect less than 2 years of data. This is complicated by two things:
     #   - leap days muddle the precise meaning of "two years of data".
