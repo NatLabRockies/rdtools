@@ -21,6 +21,30 @@ Enhancements
 * :py:func:`~rdtools.plotting.degradation_summary_plots` ``detailed=True`` mode now
   properly handles points used odd vs even number of times (not just 0, 1, 2).
   (:issue:`394`)
+* :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
+  ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
+  columns for each YoY slope.  (:issue:`459`)
+
+Bug Fixes
+---------
+* Fixed ``usage_of_points`` calculation in :py:func:`~rdtools.degradation.degradation_year_on_year`
+  to properly handle ``multi_yoy=True`` mode with overlapping slopes.  (:issue:`394`)
+
+Maintenance
+-----------
+* Added ``_avg_timestamp_old_Pandas`` helper function for pandas <2.0 compatibility
+  when calculating center labels.
+* Fixed nbval workflow command syntax (``--sanitize-with`` to ``--nbval-sanitize-with``).
+* Improved pandas 3.0 compatibility with datetime resolution handling.
+
+Testing
+-------
+* Added tests for error handling paths in :py:mod:`~rdtools.degradation`:
+  ``classical_decomposition`` missing/irregular data, ``year_on_year`` circular block
+  validation, no valid pairs error, and ``_mk_test`` edge cases (no trend, ties,
+  decreasing).
+* Added test for ``multi_yoy=True`` parameter in ``degradation_year_on_year``.
+* Set matplotlib backend to ``Agg`` in test ``conftest.py`` to avoid tkinter issues.
 
 Testing
 -------

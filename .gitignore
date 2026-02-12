@@ -7,9 +7,10 @@
 # ignore byte compiled files
 *.py[co]
 
-# ignore coveralls yaml, coverge dir
+# ignore coveralls yaml, coverage dir
 .coveralls.yml
 .coverage
+.coverage.*
 htmlcov/
 
 # ignore test cache
