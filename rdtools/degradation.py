@@ -242,11 +242,9 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     energy_normalized.name = 'energy'
     energy_normalized.index.name = 'dt'
 
-    if label not in {None, "right", "left", "center"}:
+    if label not in {"right", "left", "center"}:
         raise ValueError(f"Unsupported value {label} for `label`."
                          " Must be 'right', 'left' or 'center'.")
-    if label is None:
-        label = "right"
 
     # Detect less than 2 years of data. This is complicated by two things:
     #   - leap days muddle the precise meaning of "two years of data".
@@ -439,19 +437,14 @@ def _avg_timestamp_old_Pandas(dt, dt_left):
     '''
     import calendar
 
-    # allow for numeric index
-    try:
-        temp_df = pd.DataFrame({'dt' : dt.dt.tz_localize(None),
-                                'dt_left' : dt_left.dt.tz_localize(None)
-                                }).tz_localize(None)
-    except TypeError:  # in case numeric index passed
-        temp_df = pd.DataFrame({'dt' : dt.dt.tz_localize(None),
-                                'dt_left' : dt_left.dt.tz_localize(None)
-                                })
+    # Remove timezone from datetime values for averaging
+    temp_df = pd.DataFrame(
+        {"dt": dt.dt.tz_localize(None), "dt_left": dt_left.dt.tz_localize(None)}
+    )
 
     # conversion from dates to seconds since epoch (unix time)
     def to_unix(s):
-        if type(s) is pd.Timestamp:
+        if isinstance(s, pd.Timestamp):
             return calendar.timegm(s.timetuple())
         else:
             return pd.NaT
@@ -469,10 +462,9 @@ def _avg_timestamp_old_Pandas(dt, dt_left):
             averages.append(pd.NaT)
     temp_df['averages'] = averages
 
-    try:
-        dt_center = (temp_df['averages'].tz_localize(dt.dt.tz)).dt.tz_localize(dt.dt.tz)
-    except TypeError:  # not a timeseries index
-        dt_center = (temp_df['averages']).dt.tz_localize(dt.dt.tz)
+    dt_center = temp_df["averages"].dt.tz_localize(dt.dt.tz)
+    dt_center.index = dt.index
+    dt_center.name = "averages"
 
     return dt_center
 
