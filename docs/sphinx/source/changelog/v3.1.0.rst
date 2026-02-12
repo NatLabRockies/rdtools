@@ -26,7 +26,7 @@ Documentation
 
 Requirements
 ------------
-* Removed pvlib version restrictions in setup.py. Previously "pvlib >= 0.11.0, <0.12.0", now "pvlib".
+* Updated pvlib requirement in setup.py from "pvlib >= 0.11.0, <0.12.0" to "pvlib >= 0.12.0" (removed upper version restriction).
 * Updated pvlib version in requirements.txt from 0.11.0 to 0.14.0
 * Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
 * Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
