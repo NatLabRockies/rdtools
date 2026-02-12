@@ -245,7 +245,7 @@ class DegradationTestCase(unittest.TestCase):
             pd.Timestamp("2015-07-01 12:00:00"),
             pd.Timestamp("2015-07-02 12:00:00")],
             index=self.get_corr_energy(0, 'D').index[-4:],
-            name='averages', dtype='datetime64[ns, UTC]'
+            name='averages', dtype='datetime64[s, UTC]'
         ).tz_localize('UTC')
 
         result = _avg_timestamp_old_Pandas(dt, dt_right).asfreq(freq='D')
@@ -293,7 +293,7 @@ def test_degradation_year_on_year_multi():
     rd = -0.005
     # Generate a daily time series with 3 years of data
     idx = pd.date_range('2017-01-01', '2020-01-01', freq='D', tz='UTC')
-    daily_rd = 1 - (1 + rd)**(1/365)
+    daily_rd = (1 + rd)**(1/365) - 1
     day_count = np.arange(len(idx))
     degradation_derate = (1 + daily_rd) ** day_count
     power = 1 - 0.1 * np.cos(day_count / 365 * 2 * np.pi)
@@ -308,7 +308,7 @@ def test_degradation_year_on_year_multi():
     assert len(rd_result) == 3
     Rd_pct, Rd_CI, calc_info = rd_result
     # Check that the result is close to expected degradation
-    assert np.isclose(Rd_pct * -1, 100 * rd, atol=0.5)
+    assert np.isclose(Rd_pct, 100 * rd, atol=0.5)
     # Check that YoY_values exists and is a Series
     assert isinstance(calc_info['YoY_values'], pd.Series)
     # Should have more YoY value for multi_yoy than standard
