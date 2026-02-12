@@ -110,9 +110,11 @@ def degradation_summary_plots(yoy_rd, yoy_ci, yoy_info, normalized_yield,
 
     renormalized_yield = normalized_yield / yoy_info['renormalizing_factor']
     if detailed:
-        colors = yoy_info['usage_of_points'].map({0: 'red', 1: 'green', 3: 'green', 5: 'green',
-                                                  7: 'green', 9: 'green', 11: 'green'
-                                                  }, na_action='ignore').fillna(plot_color)
+        # Color by usage parity: 0 -> red, odd -> green, even/non-zero or NaN -> plot_color
+        usage = yoy_info['usage_of_points']
+        colors = pd.Series(plot_color, index=usage.index)
+        colors[usage == 0] = 'red'
+        colors[usage % 2 == 1] = 'green'
     else:
         colors = plot_color
     ax1.scatter(
@@ -511,11 +513,11 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, lab
     try:
         roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//2,
                                         center=center)
-    except ValueError:  # this occurs with degradation_yoy(multi_yoy=True). resample to daily mean
+    except ValueError:  # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
         warnings.warn("Input `yoy_info['YoY_values']` appears to have multiple annual "
-                      "slopes per day, which is the case if degradation_yoy(multi_yoy=True). "
+                      "slopes per day, which is the case if degradation_year_on_year(multi_yoy=True). "
                       "Proceeding to plot with a daily mean which will average out the time-series"
-                      " trend. Recommend re-running with degradation_yoy(multi_yoy=False).")
+                      " trend. Recommend re-running with degradation_year_on_year(multi_yoy=False).")
         roller = results_values.resample('D').mean().rolling(f'{rolling_days}d',
                                                              min_periods=rolling_days//2,
                                                              center=center)

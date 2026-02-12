@@ -299,15 +299,18 @@ def test_degradation_timeseries_plot(degradation_info):
     with pytest.raises(ValueError):
         degradation_timeseries_plot(yoy_info, include_ci=False, label='CENTER')
 
-    # Add multi-YoY test by duplication idx=100.  TODO: catch warning
+    # Add multi-YoY test by duplication idx=100.
     yoy_multi = copy.deepcopy(yoy_info)
     new_idx = yoy_multi['YoY_values'].index[100]
     new_val = yoy_multi['YoY_values'].iloc[100]
     yoy_values_multi = pd.concat([yoy_multi['YoY_values'], pd.Series([new_val], index=[new_idx])])
     yoy_multi['YoY_values'] = yoy_values_multi
     with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
         result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False)
         assert_isinstance(result, plt.Figure)
-        assert any("warning" in str(warn).lower() for warn in w), "Expected a warning to be raised"
+        assert len(w) > 0, "Expected at least one warning to be raised"
+        assert any(issubclass(warn.category, UserWarning) for warn in w), \
+            "Expected a UserWarning to be raised for multi-YoY values"
 
     plt.close('all')

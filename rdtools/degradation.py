@@ -407,13 +407,14 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         return (Rd_pct, Rd_CI, calc_info)
 
     else:  # If we do not need confidence intervals and exceedance level
-        """ # TODO: return tuple just like all other cases. Issue: test_bootstrap_module
-        return (Rd_pct, None, {
-            'YoY_values': yoy_result,
-            'usage_of_points': energy_normalized.set_index('dt')['usage_of_points'],
-            'YoY_times': YoY_times[['dt_right', 'dt_center', 'dt_left']]}
-        })
-        """
+        # TODO: Consider returning a tuple for consistency with other branches, e.g.:
+        # return (Rd_pct, None, {
+        #     'YoY_values': yoy_result,
+        #     'usage_of_points': energy_normalized.set_index('dt')['usage_of_points'],
+        #     'YoY_times': YoY_times[['dt_right', 'dt_center', 'dt_left']]}
+        # )
+        # Note: Current behavior intentionally returns only the scalar Rd_pct
+        # to maintain compatibility (see test_bootstrap_module).
         return Rd_pct
 
 
