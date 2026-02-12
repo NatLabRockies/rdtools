@@ -467,10 +467,9 @@ def _avg_timestamp_old_Pandas(dt, dt_left):
             averages.append(pd.NaT)
     temp_df['averages'] = averages
 
-    try:
-        dt_center = (temp_df['averages'].tz_localize(dt.dt.tz)).dt.tz_localize(dt.dt.tz)
-    except TypeError:  # not a timeseries index
-        dt_center = (temp_df['averages']).dt.tz_localize(dt.dt.tz)
+    dt_center = temp_df["averages"].dt.tz_localize(dt.dt.tz)
+    dt_center.index = dt.index
+    dt_center.name = "averages"
 
     return dt_center
 
