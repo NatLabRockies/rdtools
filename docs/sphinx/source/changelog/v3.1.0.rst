@@ -30,7 +30,7 @@ Requirements
 * Updated pvlib version in requirements.txt from 0.11.0 to 0.14.0
 * Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
 * Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
-* Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compativility.
+* Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compatibility.
 * Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
 * Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.
 * Updated scikit-learn version in requirements.txt from 1.5.1 to 1.7.2 for python 3.13 and xgboost compatibility.
