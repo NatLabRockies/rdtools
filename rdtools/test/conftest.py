@@ -5,6 +5,10 @@ import itertools
 import pvlib
 import re
 
+# Use non-GUI backend for matplotlib to avoid tkinter issues in tests
+import matplotlib
+matplotlib.use('Agg')
+
 import rdtools
 
 
