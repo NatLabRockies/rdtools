@@ -509,7 +509,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, lab
         offset_days = 365
 
     try:
-        roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//2,
+        roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//4,
                                         center=center)
     except ValueError:
         # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
@@ -522,7 +522,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, lab
             "degradation_year_on_year(multi_yoy=False)."
         )
         roller = results_values.resample('D').mean().rolling(f'{rolling_days}d',
-                                                             min_periods=rolling_days//2,
+                                                             min_periods=rolling_days//4,
                                                              center=center)
     # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
     # TODO: figure out some workaround to return both percentiles in a single pass
