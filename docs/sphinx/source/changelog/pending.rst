@@ -7,8 +7,8 @@ Enhancements
 * :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``label=``
   to return the calc_info['YoY_values'] as either right labeled (default), left or
   center labeled. (:issue:`459`)
-* :py:func:`~rdtools.plotting.degradation_timeseries_plot` has new parameter ``label=``
-  to allow the timeseries plot to have right labeling (default), center or left labeling.
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now defaults to rolling
+  median, centered on the timestamp (pd.rolling(center=True)).
   (:issue:`455`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``multi_yoy``
   (default False) to trigger multiple YoY degradation calculations similar to Hugo Quest et
@@ -29,6 +29,7 @@ Bug Fixes
 ---------
 * Fixed ``usage_of_points`` calculation in :py:func:`~rdtools.degradation.degradation_year_on_year`
   to properly handle ``multi_yoy=True`` mode with overlapping slopes.  (:issue:`394`)
+
 
 Maintenance
 -----------
