@@ -5,7 +5,6 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import warnings
-import datetime
 
 
 def degradation_summary_plots(yoy_rd, yoy_ci, yoy_info, normalized_yield,
@@ -436,7 +435,7 @@ def availability_summary_plots(power_system, power_subsystem, loss_total,
     return fig
 
 
-def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True, 
+def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
                                 fig=None, plot_color=None, ci_color=None, **kwargs):
     '''
     Plot resampled time series of degradation trend with time
@@ -487,7 +486,6 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         plot_color = 'tab:orange'
     if ci_color is None:
         ci_color = 'C0'
-
 
     try:
         roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//4,

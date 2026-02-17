@@ -58,17 +58,20 @@ def degradation_info(degradation_power_signal):
     rd, rd_ci, calc_info = degradation_year_on_year(degradation_power_signal)
     return degradation_power_signal, rd, rd_ci, calc_info
 
+
 @pytest.fixture()
 def degradation_info_center(degradation_power_signal):
     # center-labeled YOY output for time-series degradation plot
     rd, rd_ci, calc_info = degradation_year_on_year(degradation_power_signal, label='center')
     return degradation_power_signal, rd, rd_ci, calc_info
 
+
 @pytest.fixture()
 def degradation_info_left(degradation_power_signal):
     # left-labeled YOY output for time-series degradation plot
     rd, rd_ci, calc_info = degradation_year_on_year(degradation_power_signal, label='left')
     return degradation_power_signal, rd, rd_ci, calc_info
+
 
 def test_degradation_summary_plots(degradation_info):
     power, yoy_rd, yoy_ci, yoy_info = degradation_info
@@ -262,27 +265,26 @@ def test_availability_summary_plots_empty(availability_analysis_object):
     plt.close('all')
 
 
-def test_degradation_timeseries_plot(degradation_info, degradation_info_center, degradation_info_left):
+def test_degradation_timeseries_plot(degradation_info, degradation_info_center,
+                                     degradation_info_left):
     power, yoy_rd, yoy_ci, yoy_info = degradation_info
 
     # test defaults (label='right')
     result_right = degradation_timeseries_plot(yoy_info)
     assert_isinstance(result_right, plt.Figure)
     xlim_right = result_right.get_axes()[0].get_xlim()[0]
-    #print(f'yoy_right: {yoy_info['YoY_values'].index[0]}')
 
     # test label='center'
-    result_center = degradation_timeseries_plot(yoy_info=degradation_info_center[3], include_ci=False)
+    result_center = degradation_timeseries_plot(yoy_info=degradation_info_center[3],
+                                                include_ci=False)
     assert_isinstance(result_center, plt.Figure)
     xlim_center = result_center.get_axes()[0].get_xlim()[0]
-    #print(f'yoy_center: {degradation_info_center[3]['YoY_values'].index[0]}')
 
     # test label='left'
-    result_left = degradation_timeseries_plot(yoy_info=degradation_info_left[3], 
+    result_left = degradation_timeseries_plot(yoy_info=degradation_info_left[3],
                                               include_ci=False)
     assert_isinstance(result_left, plt.Figure)
     xlim_left = result_left.get_axes()[0].get_xlim()[0]
-    #print(f'yoy_left: {degradation_info_left[3]['YoY_values'].index[0]}')
 
     # test default label matches label='right'
     result_default = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False)
