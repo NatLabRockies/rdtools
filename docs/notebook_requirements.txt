@@ -45,6 +45,7 @@ qtconsole==5.5.2
 Send2Trash==1.8.3
 simplegeneric==0.8.1
 soupsieve==2.6
+tabulate==0.8.8
 terminado==0.18.1
 testpath==0.6.0
 tinycss2==1.2.1
@@ -53,3 +54,4 @@ traitlets==5.14.3
 wcwidth==0.2.13
 webencodings==0.5.1
 widgetsnbextension==4.0.11
+
