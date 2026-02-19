@@ -37,6 +37,9 @@ Maintenance
   when calculating center labels.
 * Fixed nbval workflow command syntax (``--sanitize-with`` to ``--nbval-sanitize-with``).
 * Improved pandas 3.0 compatibility with datetime resolution handling.
+* Updated ``docs/notebook_requirements.txt`` to require ``numexpr>=2.10.2`` and
+  ``tabulate>=0.9.0`` to satisfy pandas' optional dependency minimum versions and
+  avoid related warnings/errors.
 
 Testing
 -------
