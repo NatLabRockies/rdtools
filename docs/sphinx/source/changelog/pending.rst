@@ -24,6 +24,9 @@ Enhancements
 * :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
   ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
   columns for each YoY slope.  (:issue:`459`)
+* Added new example notebook ``docs/Multi-year_on_year_example.ipynb`` demonstrating the
+  ``label='center'`` and ``multi_yoy=True`` features of
+  :py:func:`~rdtools.degradation.degradation_year_on_year`.  (:issue:`394`)
 
 Bug Fixes
 ---------
