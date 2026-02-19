@@ -30,7 +30,7 @@ nbconvert==7.17.0
 nbformat==5.10.4
 nest-asyncio==1.6.0
 notebook==7.2.2
-numexpr==2.10.1
+numexpr==2.10.2
 pandocfilters==1.5.1
 parso==0.8.4
 pexpect==4.9.0

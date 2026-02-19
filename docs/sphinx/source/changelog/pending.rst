@@ -24,6 +24,9 @@ Enhancements
 * :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
   ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
   columns for each YoY slope.  (:issue:`459`)
+* Added new example notebook ``docs/Multi-year_on_year_example.ipynb`` demonstrating the
+  ``label='center'`` and ``multi_yoy=True`` features of
+  :py:func:`~rdtools.degradation.degradation_year_on_year`.  (:issue:`394`)
 
 Bug Fixes
 ---------
@@ -37,6 +40,9 @@ Maintenance
   when calculating center labels.
 * Fixed nbval workflow command syntax (``--sanitize-with`` to ``--nbval-sanitize-with``).
 * Improved pandas 3.0 compatibility with datetime resolution handling.
+* Updated ``docs/notebook_requirements.txt`` to require ``numexpr>=2.10.2`` and
+  ``tabulate>=0.9.0`` to satisfy pandas' optional dependency minimum versions and
+  avoid related warnings/errors.
 
 Testing
 -------
