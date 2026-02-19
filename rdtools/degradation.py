@@ -333,11 +333,11 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     YoY_times = YoY_times.rename(columns={'dt': 'dt_right'})
 
     YoY_times.set_index(YoY_times[f'dt_{label}'], inplace=True)
-    YoY_times.index.name = None
+    YoY_times.index.name = 'dt'
 
     # now apply either right, left, or center label index to the yoy_result
     yoy_result.index = YoY_times[f'dt_{label}']
-    yoy_result.index.name = None
+    yoy_result.index.name = 'dt'
 
     # the following is throwing a futurewarning if infer_objects() isn't included here.
     # see https://github.com/pandas-dev/pandas/issues/57734
