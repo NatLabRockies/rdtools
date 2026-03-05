@@ -487,10 +487,8 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     if ci_color is None:
         ci_color = 'C0'
 
-    try:
-        roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//4,
-                                        center=True)
-    except ValueError:
+    results_values = results_values.sort_index()
+    if results_values.index.has_duplicates:
         # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
         warnings.warn(
             "Input `yoy_info['YoY_values']` appears to have multiple annual "
@@ -503,6 +501,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         roller = results_values.resample('D').mean().rolling(f'{rolling_days}d',
                                                              min_periods=rolling_days//4,
                                                              center=True)
+    else:
+        roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//4,
+                                        center=True)
     # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
     # TODO: figure out some workaround to return both percentiles in a single pass
     if include_ci:
