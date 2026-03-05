@@ -56,7 +56,8 @@ def get_clearsky_tamb(times, latitude, longitude, window_size=40,
             # workaround from https://github.com/pandas-dev/pandas/issues/55794
             freq_actual = pd.infer_freq(times[:10])
             warnings.warn("Input 'times' has no frequency attribute. "
-                          "Inferring frequency from first 10 timestamps.")
+                          "Inferring frequency from first 10 timestamps.",
+                          stacklevel=2)
     else:
         freq_actual = times.freq
 
@@ -121,7 +122,8 @@ def get_clearsky_tamb(times, latitude, longitude, window_size=40,
             df['solar_noon_offset'].values)
     if df['Clear Sky Temperature (C)'].isna().any():
         warnings.warn("Clear Sky Temperature includes NaNs, "
-                      "possibly invalid Lat/Lon coordinates.", UserWarning)
+                      "possibly invalid Lat/Lon coordinates.", UserWarning,
+                      stacklevel=2)
     return df['Clear Sky Temperature (C)']
 
 

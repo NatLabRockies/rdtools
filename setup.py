@@ -32,13 +32,11 @@ SETUP_REQUIRES = [
 ]
 
 TESTS_REQUIRE = [
-    "pytest >= 3.6.3",
+    "pytest >= 3.10.1",
     "pytest-cov",
     "coverage",
     "flake8",
-    # nbval greater than 0.9.6 has a bug with semicolon
-    # https://github.com/computationalmodelling/nbval/issues/194
-    "nbval<=0.9.6",
+    "nbval>=0.10.0",
     "pytest-mock",
 ]
 
@@ -51,8 +49,8 @@ INSTALL_REQUIRES = [
     "h5py >= 3.7.0",
     "plotly>=4.0.0",
     "xgboost >= 1.6.0",
-    "pvlib >= 0.11.0, <0.12.0",
-    "scikit-learn >= 1.1.3, <1.6.0",
+    "pvlib >= 0.12.0",
+    "scikit-learn >= 1.1.3, != 1.6.0",
     "arch >= 5.0",
     "filterpy >= 1.4.2",
 ]
@@ -80,10 +78,10 @@ CLASSIFIERS = [
     "Intended Audience :: Science/Research",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
 
@@ -131,4 +129,5 @@ setup(name=DISTNAME,
       url=URL,
       project_urls=PROJECT_URLS,
       classifiers=CLASSIFIERS,
+      python_requires='>=3.10',
       **setuptools_kwargs)

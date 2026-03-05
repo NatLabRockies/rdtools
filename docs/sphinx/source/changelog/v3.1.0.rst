@@ -1,0 +1,91 @@
+****************************
+v3.1.0 (March 05, 2026)
+****************************
+
+Enhancements
+------------
+* Modified ``TrendAnalysis._filter()`` to allow ``clip_filter`` to use ``pv_energy``
+  when ``pv_power`` is not available. This enables clipping detection for energy-based
+  analyses with sub-hourly data.
+* Added frequency validation for ``clip_filter`` in ``TrendAnalysis._filter()`` that
+  raises a ``ValueError`` if the time series has a median time step greater than 60
+  minutes, as clipping detection requires higher resolution data.
+
+
+Documentation
+-------------
+* Updated temperature coefficient (``gamma_pdc``) in PVDAQ example notebooks from -0.005 to
+  -0.0034 1/K to reflect modern silicon PV module specifications. Updated notebooks include
+  ``degradation_and_soiling_example.ipynb``, ``TrendAnalysis_example.ipynb``, and
+  ``TrendAnalysis_example_NSRDB.ipynb``.
+* Added ``stacklevel`` parameter to all ``warnings.warn()`` calls so that warning
+  messages point to user code rather than rdtools internals. Affected modules:
+  ``analysis_chains``, ``filtering``, ``soiling``, ``plotting``, ``normalization``,
+  ``availability``, and ``clearsky_temperature``.
+
+
+Requirements
+------------
+* Updated pvlib requirement in setup.py from "pvlib >= 0.11.0, <0.12.0" to "pvlib >= 0.12.0" (removed upper version restriction).
+* Updated pvlib version in requirements.txt from 0.11.0 to 0.14.0
+* Removed pandas upper version restriction in setup.py. Now "pandas >= 1.4.4" to support pandas 3.0.
+* Removed numpy upper version restriction in setup.py. Now "numpy >= 1.22.4" to support numpy 2.x.
+* Updated pandas version in requirements.txt from 2.2.2 to 2.2.3 for python 3.13 compatibility.
+* Updated scipy version in requirements.txt from 1.13.1 to 1.14.1 for python 3.13 compatibility.
+* Updated h5py version in requirements.txt from 3.11.0 to 3.12.0 for python 3.13 compatibility.
+* Updated scikit-learn version in requirements.txt from 1.5.1 to 1.7.2 for python 3.13 and xgboost compatibility.
+* Updated plotly version in requirements.txt from 5.23.0 to 6.1.1 for python 3.13 compatibility.
+* Updated setuptools-scm version in requirements.txt from 8.1.0 to 9.2.2 for python 3.13 compatibility.
+* Updated six version in requirements.txt from 1.16.0 to 1.17.0 for python 3.13 compatibility.
+* Updated statsmodels version in requirements.txt from 0.14.2 to 0.14.6 for python 3.13 compatibility.
+* Updated threadpoolctl version in requirements.txt from 3.5.0 to 3.6.0 for python 3.13 compatibility.
+* Updated tomli version in requirements.txt from 2.0.1 to 2.0.2 for python 3.13 compatibility.
+* Updated typing_extensions version in requirements.txt from 4.12.2 to 4.15.0 for python 3.13 compatibility.
+* Updated urllib3 version in requirements.txt from 2.5.0 to 2.6.3 for python 3.13 compatibility and to fix security issues.
+* Updated xgboost version in requirements.txt from 2.1.1 to 3.1.3 for python 3.13 compatibility.
+* Updated fonttools version in requirements.txt from 4.53.1 to 4.58.4 for python 3.13 compatibility.
+* Updated idna version in requirements.txt from 3.7 to 3.8 for python 3.13 compatibility.
+* Updated joblib version in requirements.txt from 1.4.2 to 1.5.2 for python 3.13 compatibility.
+* Updated kiwisolver version in requirements.txt from 1.4.5 to 1.4.6 for python 3.13 compatibility.
+* Updated matplotlib version in requirements.txt from 3.9.2 to 3.9.4 for python 3.13 compatibility.
+* Updated packaging version in requirements.txt from 24.1 to 26.0 for python 3.13 compatibility.
+* Updated patsy version in requirements.txt from 0.5.6 to 1.0.0 for python 3.13 compatibility.
+* Updated Pillow version in requirements.txt from 10.4.0 to 12.1.1 for python 3.13 compatibility.
+* Updated pyparsing version in requirements.txt from 3.1.2 to 3.2.0 for python 3.13 compatibility.
+* Updated pytz version in requirements.txt from 2024.1 to 2025.2 for python 3.13 compatibility.
+* Added ``python_requires='>=3.10'`` to ``setup.py`` to enforce minimum Python version
+  at install time, matching the supported Python versions in classifiers.
+* Updated ``nbval`` test dependency from ``<=0.9.6`` to ``>=0.10.0`` to support pytest 7+
+  which requires ``pathlib.Path`` instead of the deprecated ``py.path.local``.
+
+Bug Fixes
+---------
+* Fixed pandas 3.0 compatibility in ``normalization.py`` by using ``.total_seconds()``
+  instead of ``.view('int64')`` with hardcoded nanosecond divisors. Pandas 3.0 changed
+  the default datetime resolution from nanoseconds (``datetime64[ns]``) to microseconds
+  (``datetime64[us]``). Affected functions: ``_delta_index``, ``_t_step_nanoseconds``,
+  ``_aggregate``, ``_interpolate_series``.
+* Fixed datetime resolution preservation in ``normalization.interpolate()`` to ensure
+  output maintains the same resolution as input (e.g., ``datetime64[us]``).
+* Fixed numpy 2.x compatibility in ``soiling.py`` by using ``.item()`` and explicit
+  indexing to extract scalar values from numpy arrays, as implicit array-to-scalar
+  conversion is deprecated.
+* Fixed xgboost 3.x compatibility in ``filtering.xgboost_clip_filter()`` by using
+  ``xgb.DMatrix`` with explicit feature names for model prediction.
+* Fixed pandas 4.0 deprecation warnings by changing lowercase ``'d'`` to uppercase
+  ``'D'`` in Timedelta strings and using ``axis=`` keyword argument for DataFrame
+  aggregation methods.
+
+
+Warnings
+--------
+* Removed obsolete ``fspath`` deprecation warning filter from ``setup.cfg`` as it is
+  no longer needed with ``nbval>=0.10.0``.
+
+
+Deprecations
+------------
+* Removed deprecated ``normalization.delta_index`` function (deprecated in v2.0.0).
+  The private ``_delta_index`` helper remains available for internal use.
+* Removed deprecated ``normalization.check_series_frequency`` function (deprecated in v2.0.0).
+  The private ``_check_series_frequency`` helper remains available for internal use.
