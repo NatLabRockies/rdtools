@@ -26,3 +26,4 @@ This page shows example usage of the RdTools analysis functions.
     examples/TrendAnalysis_example
     examples/TrendAnalysis_example_NSRDB
     examples/system_availability_example
+    examples/Multi-year_on_year_example

@@ -16,7 +16,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 import plotly
 import pytest
+import warnings
 import re
+import copy
 
 from conftest import assert_isinstance
 
@@ -54,6 +56,20 @@ def degradation_info(degradation_power_signal):
         ['YoY_values', 'renormalizing_factor', 'exceedance_level']
     '''
     rd, rd_ci, calc_info = degradation_year_on_year(degradation_power_signal)
+    return degradation_power_signal, rd, rd_ci, calc_info
+
+
+@pytest.fixture()
+def degradation_info_center(degradation_power_signal):
+    # center-labeled YOY output for time-series degradation plot
+    rd, rd_ci, calc_info = degradation_year_on_year(degradation_power_signal, label='center')
+    return degradation_power_signal, rd, rd_ci, calc_info
+
+
+@pytest.fixture()
+def degradation_info_left(degradation_power_signal):
+    # left-labeled YOY output for time-series degradation plot
+    rd, rd_ci, calc_info = degradation_year_on_year(degradation_power_signal, label='left')
     return degradation_power_signal, rd, rd_ci, calc_info
 
 
@@ -249,10 +265,65 @@ def test_availability_summary_plots_empty(availability_analysis_object):
     plt.close('all')
 
 
-def test_degradation_timeseries_plot(degradation_info):
+def test_degradation_timeseries_plot(degradation_info, degradation_info_center,
+                                     degradation_info_left):
     power, yoy_rd, yoy_ci, yoy_info = degradation_info
 
-    # test defaults
-    result = degradation_timeseries_plot(yoy_info)
-    assert_isinstance(result, plt.Figure)
+    # test defaults (label='right')
+    result_right = degradation_timeseries_plot(yoy_info)
+    assert_isinstance(result_right, plt.Figure)
+    xlim_right = result_right.get_axes()[0].get_xlim()[0]
+
+    # test label='center'
+    result_center = degradation_timeseries_plot(yoy_info=degradation_info_center[3],
+                                                include_ci=False)
+    assert_isinstance(result_center, plt.Figure)
+    xlim_center = result_center.get_axes()[0].get_xlim()[0]
+
+    # test label='left'
+    result_left = degradation_timeseries_plot(yoy_info=degradation_info_left[3],
+                                              include_ci=False)
+    assert_isinstance(result_left, plt.Figure)
+    xlim_left = result_left.get_axes()[0].get_xlim()[0]
+
+    # test default label matches label='right'
+    result_default = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False)
+    xlim_default = result_default.get_axes()[0].get_xlim()[0]
+    assert xlim_default == xlim_right
+
+    # Check that the xlim values are offset as expected
+    # right > center > left (since offset_days increases)
+    assert xlim_right > xlim_center > xlim_left
+
+    # The expected difference from right to left is 365 days (1 yrs), allow 5% tolerance
+    expected_diff = 365
+    actual_diff = (xlim_right - xlim_left)
+    tolerance = expected_diff * 0.05
+    assert abs(actual_diff - expected_diff) <= tolerance, \
+        f"difference of right-left xlim {actual_diff} not within 5% of 1 yr."
+
+    # The expected difference from right to center is 182 days, allow 5% tolerance
+    expected_diff2 = 182
+    actual_diff2 = (xlim_right - xlim_center)
+    tolerance2 = expected_diff2 * 0.05
+    assert abs(actual_diff2 - expected_diff2) <= tolerance2, \
+        f"difference of right-center xlim {actual_diff2} not within 5% of 1/2 year."
+
+    with pytest.raises(KeyError):
+        degradation_timeseries_plot({'a': 1}, include_ci=False)
+
+    # Add multi-YoY test by duplication idx=100.
+    yoy_multi = copy.deepcopy(yoy_info)
+    new_idx = yoy_multi['YoY_values'].index[100]
+    new_val = yoy_multi['YoY_values'].iloc[100]
+    yoy_values_multi = pd.concat([yoy_multi['YoY_values'], pd.Series([new_val], index=[new_idx])])
+    yoy_multi['YoY_values'] = yoy_values_multi
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter('always')
+        result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False)
+        assert_isinstance(result, plt.Figure)
+        assert len(w) > 0, "Expected at least one warning to be raised"
+        assert any(issubclass(warn.category, UserWarning) for warn in w), \
+            "Expected a UserWarning to be raised for multi-YoY values"
+
     plt.close('all')

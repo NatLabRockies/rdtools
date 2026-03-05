@@ -1,11 +1,15 @@
-import pytest
-import numpy as np
-import pandas as pd
 import itertools
-import pvlib
 import re
 
-import rdtools
+import matplotlib
+import numpy as np
+import pandas as pd
+import pvlib
+import pytest
+
+matplotlib.use("Agg")  # Use non-GUI backend; must be set before importing rdtools
+
+import rdtools  # noqa: E402
 
 
 def assert_isinstance(obj, klass):

@@ -1,0 +1,61 @@
+*************************
+v3.2.0 (X, X, 2026)
+*************************
+
+Enhancements
+------------
+* :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``label=``
+  to return the calc_info['YoY_values'] as either right labeled (default), left or
+  center labeled. (:issue:`459`)
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now defaults to rolling
+  median, centered on the timestamp (pd.rolling(center=True)).
+  (:issue:`455`)
+* :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``multi_yoy``
+  (default False) to trigger multiple YoY degradation calculations similar to Hugo Quest et
+  al 2023. In this mode, instead of a series of 1-year duration slopes, 2-year, 3-year etc
+  slopes are also included.  calc_info['YoY_values'] returns a non-monotonic index
+  in this mode due to multiple overlapping annual slopes.  (:issue:`394`)
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now supports ``multi_yoy=True``
+  data by resampling overlapping YoY values to their mean. A warning is issued when this
+  resampling occurs.  (:issue:`394`)
+* :py:func:`~rdtools.plotting.degradation_summary_plots` ``detailed=True`` mode now
+  properly handles points used odd vs even number of times (not just 0, 1, 2).
+  (:issue:`394`)
+* :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
+  ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
+  columns for each YoY slope.  (:issue:`459`)
+* Added new example notebook ``docs/Multi-year_on_year_example.ipynb`` demonstrating the
+  ``label='center'`` and ``multi_yoy=True`` features of
+  :py:func:`~rdtools.degradation.degradation_year_on_year`.  (:issue:`394`)
+
+Bug Fixes
+---------
+* Fixed ``usage_of_points`` calculation in :py:func:`~rdtools.degradation.degradation_year_on_year`
+  to properly handle ``multi_yoy=True`` mode with overlapping slopes.  (:issue:`394`)
+
+
+Maintenance
+-----------
+* Added ``_avg_timestamp_old_Pandas`` helper function for pandas <2.0 compatibility
+  when calculating center labels.
+* Fixed nbval workflow command syntax (``--sanitize-with`` to ``--nbval-sanitize-with``).
+* Improved pandas 3.0 compatibility with datetime resolution handling.
+* Updated ``docs/notebook_requirements.txt`` to require ``numexpr>=2.10.2`` and
+  ``tabulate>=0.9.0`` to satisfy pandas' optional dependency minimum versions and
+  avoid related warnings/errors.
+
+Testing
+-------
+* Added tests for error handling paths in :py:mod:`~rdtools.degradation`:
+  ``classical_decomposition`` missing/irregular data, ``year_on_year`` circular block
+  validation, no valid pairs error, and ``_mk_test`` edge cases (no trend, ties,
+  decreasing).
+* Added test for ``multi_yoy=True`` parameter in ``degradation_year_on_year``.
+* Set matplotlib backend to ``Agg`` in test ``conftest.py`` to avoid tkinter issues.
+
+
+Contributors
+------------
+* Chris Deline (:ghuser:`cdeline`)
+* Martin Springer (:ghuser:`martin-springer`)
+

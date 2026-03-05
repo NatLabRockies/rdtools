@@ -202,6 +202,68 @@ class DegradationTestCase(unittest.TestCase):
             self.test_corr_energy[input_freq])
         self.assertTrue((np.sum(rd_result[2]['usage_of_points'])) == 1462)
 
+    def test_degradation_year_on_year_label_center(self):
+        ''' Test degradation_year_on_year with label="center". '''
+
+        funcName = sys._getframe().f_code.co_name
+        logging.debug('Running {}'.format(funcName))
+
+        # test YOY degradation calc with label='center'
+        input_freq = 'D'
+        rd_result = degradation_year_on_year(
+            self.test_corr_energy[input_freq], label='center')
+        self.assertAlmostEqual(rd_result[0], 100 * self.rd, places=1)
+        rd_result1 = degradation_year_on_year(
+            self.test_corr_energy[input_freq])
+        rd_result2 = degradation_year_on_year(
+            self.test_corr_energy[input_freq], label='right')
+        pd.testing.assert_index_equal(rd_result1[2]['YoY_values'].index,
+                                      rd_result2[2]['YoY_values'].index)
+        # 365/2 days difference between center and right label
+        assert (rd_result2[2]['YoY_values'].index -
+                rd_result[2]['YoY_values'].index).mean().days == \
+            pytest.approx(183, abs=1)
+
+        with pytest.raises(ValueError):
+            degradation_year_on_year(self.test_corr_energy[input_freq],
+                                     label='LEFT')
+        with pytest.raises(ValueError):
+            degradation_year_on_year(self.test_corr_energy[input_freq],
+                                     label=None)
+
+    def test_avg_timestamp_old_Pandas(self):
+        """Test the _avg_timestamp_old_Pandas function for correct averaging."""
+        from rdtools.degradation import _avg_timestamp_old_Pandas
+        funcName = sys._getframe().f_code.co_name
+        logging.debug('Running {}'.format(funcName))
+        dt = pd.Series(self.get_corr_energy(0, 'D').index[-4:].tz_localize('UTC'),
+                       index=self.get_corr_energy(0, 'D').index[-4:].tz_localize('UTC'))
+        dt_right = pd.Series(self.get_corr_energy(0, 'D').index[-3:].tz_localize('UTC') +
+                             pd.Timedelta(days=365),
+                             index=self.get_corr_energy(0, 'D').index[-3:].tz_localize('UTC'))
+        # Expected dtype depends on pandas version (ns for <3.0, s for >=3.0)
+        pandas_version = pd.__version__.split(".")
+        if int(pandas_version[0]) < 3:
+            expected_dtype = "datetime64[ns, UTC]"
+        else:
+            expected_dtype = "datetime64[s, UTC]"
+        # Expected result is the midpoint between each pair
+        expected = pd.Series(
+            [
+                pd.NaT,
+                pd.Timestamp("2015-06-30 12:00:00"),
+                pd.Timestamp("2015-07-01 12:00:00"),
+                pd.Timestamp("2015-07-02 12:00:00"),
+            ],
+            index=self.get_corr_energy(0, "D").index[-4:],
+            name="averages",
+            dtype=expected_dtype,
+        ).tz_localize("UTC")
+
+        result = _avg_timestamp_old_Pandas(dt, dt_right).asfreq(freq='D')
+
+        pd.testing.assert_series_equal(result, expected)
+
 
 @pytest.mark.parametrize(
     "start,end,freq",
@@ -236,6 +298,129 @@ def test_yoy_two_years_error(start, end, freq):
         _ = degradation_year_on_year(series.iloc[:-1])
     with pytest.raises(ValueError, match='must provide at least two years'):
         _ = degradation_year_on_year(series.iloc[1:])
+
+
+def test_degradation_year_on_year_multi():
+    """Test degradation_year_on_year with multi_yoy=True. Thanks GPT!"""
+    rd = -0.005
+    # Generate a daily time series with 3 years of data
+    idx = pd.date_range('2017-01-01', '2020-01-01', freq='D', tz='UTC')
+    daily_rd = (1 + rd)**(1/365) - 1
+    day_count = np.arange(len(idx))
+    degradation_derate = (1 + daily_rd) ** day_count
+    power = 1 - 0.1 * np.cos(day_count / 365 * 2 * np.pi)
+    power *= degradation_derate
+    power = pd.Series(power, index=idx)
+    # Standard yoy baseline
+    (rd0, rd_ci0, calc_info0) = degradation_year_on_year(power, multi_yoy=False)
+    # Run multi_yoy test
+    rd_result = degradation_year_on_year(power, multi_yoy=True)
+    # Should return a tuple (Rd_pct, Rd_CI, calc_info)
+    assert isinstance(rd_result, tuple)
+    assert len(rd_result) == 3
+    Rd_pct, Rd_CI, calc_info = rd_result
+    # Check that the result is close to expected degradation
+    assert np.isclose(Rd_pct, 100 * rd, atol=0.5)
+    # Check that YoY_values exists and is a Series
+    assert isinstance(calc_info['YoY_values'], pd.Series)
+    # Should have more YoY value for multi_yoy than standard
+    assert len(calc_info['YoY_values']) > len(calc_info0['YoY_values'])
+
+
+def test_classical_decomposition_missing_data():
+    """Test that classical decomposition raises error for missing data."""
+    # Create a regular time series with missing values (NaN)
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series.iloc[100:105] = np.nan  # introduce missing data
+
+    with pytest.raises(ValueError, match="regular time series"):
+        degradation_classical_decomposition(series)
+
+
+def test_classical_decomposition_irregular_frequency():
+    """Test that classical decomposition raises error for irregular frequency."""
+    # Create an irregular time series by sampling randomly
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series = series.sample(frac=0.8, replace=False).sort_index()
+
+    with pytest.raises(ValueError, match="regular time series"):
+        degradation_classical_decomposition(series)
+
+
+def test_yoy_circular_block_no_frequency():
+    """Test circular_block raises error when frequency cannot be inferred."""
+    # Create an irregular time series
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series = series.sample(frac=0.8, replace=False).sort_index()
+
+    with pytest.raises(ValueError, match="fixed frequency"):
+        degradation_year_on_year(series, uncertainty_method="circular_block")
+
+
+def test_yoy_circular_block_too_long():
+    """Test circular_block raises error when block_length is too long."""
+    idx = pd.date_range("2012-01-01", "2015-01-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+
+    # block_length must be less than 1/3 of the series length
+    too_long = len(series) // 2
+
+    with pytest.raises(ValueError, match="shorter than a third"):
+        degradation_year_on_year(
+            series, uncertainty_method="circular_block", block_length=too_long
+        )
+
+
+def test_yoy_no_pairs_found():
+    """Test year_on_year raises error when no valid pairs can be formed."""
+    # Create a series that's just over 1 year but with NaN in positions
+    # that prevent any valid year-over-year pairs
+    idx = pd.date_range("2012-01-01", "2014-06-01", freq="D")
+    series = pd.Series(1.0, index=idx)
+    # Make all values NaN except first few and last few (too far apart for pairs)
+    series.iloc[10:-10] = np.nan
+
+    with pytest.raises(ValueError, match="no year-over-year"):
+        degradation_year_on_year(series)
+
+
+def test_mk_test_no_trend():
+    """Test Mann-Kendall test with no trend (z == 0 case)."""
+    from rdtools.degradation import _mk_test
+
+    # Constant series should have no trend
+    x = np.array([1.0, 1.0, 1.0, 1.0, 1.0])
+    trend, h, p, z = _mk_test(x)
+
+    assert trend == "no trend"
+    assert z == 0
+    assert not h
+
+
+def test_mk_test_with_ties():
+    """Test Mann-Kendall test with tied values."""
+    from rdtools.degradation import _mk_test
+
+    # Series with ties (repeated values)
+    x = np.array([1, 2, 2, 3, 3, 3, 4, 5])
+    trend, h, p, z = _mk_test(x)
+
+    # Should still detect increasing trend
+    assert trend == "increasing"
+
+
+def test_mk_test_decreasing():
+    """Test Mann-Kendall test with clear decreasing trend."""
+    from rdtools.degradation import _mk_test
+
+    x = np.array([10, 9, 8, 7, 6, 5, 4, 3, 2, 1])
+    trend, h, p, z = _mk_test(x)
+
+    assert trend == "decreasing"
+    assert z < 0
 
 
 if __name__ == '__main__':

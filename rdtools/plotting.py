@@ -54,8 +54,8 @@ def degradation_summary_plots(yoy_rd, yoy_ci, yoy_info, normalized_yield,
         Include extra information in the returned figure:
 
         * Color code points by the number of times they get used in calculating
-          Rd slopes.  Default color: 2 times (as a start and endpoint). Green:
-          1 time. Red: 0 times.
+          Rd slopes.  Default color: even times (as a start and endpoint). Green:
+          odd times. Red: 0 times.
         * The number of year-on-year slopes contributing to the histogram.
 
     Note
@@ -109,7 +109,11 @@ def degradation_summary_plots(yoy_rd, yoy_ci, yoy_info, normalized_yield,
 
     renormalized_yield = normalized_yield / yoy_info['renormalizing_factor']
     if detailed:
-        colors = yoy_info['usage_of_points'].map({0: 'red', 1: 'green', 2: plot_color})
+        # Color by usage parity: 0 -> red, odd -> green, even/non-zero or NaN -> plot_color
+        usage = yoy_info['usage_of_points']
+        colors = pd.Series(plot_color, index=usage.index)
+        colors[usage == 0] = 'red'
+        colors[usage % 2 == 1] = 'green'
     else:
         colors = plot_color
     ax1.scatter(
@@ -475,7 +479,6 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
 
     try:
         results_values = yoy_info['YoY_values']
-
     except KeyError:
         raise KeyError("yoy_info input dictionary does not contain key `YoY_values`.")
 
@@ -484,7 +487,22 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     if ci_color is None:
         ci_color = 'C0'
 
-    roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//2)
+    try:
+        roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//4,
+                                        center=True)
+    except ValueError:
+        # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
+        warnings.warn(
+            "Input `yoy_info['YoY_values']` appears to have multiple annual "
+            "slopes per day, which is the case if "
+            "degradation_year_on_year(multi_yoy=True). "
+            "Proceeding to plot with a daily mean which will average out the "
+            "time-series trend. Recommend re-running with "
+            "degradation_year_on_year(multi_yoy=False)."
+        )
+        roller = results_values.resample('D').mean().rolling(f'{rolling_days}d',
+                                                             min_periods=rolling_days//4,
+                                                             center=True)
     # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
     # TODO: figure out some workaround to return both percentiles in a single pass
     if include_ci:
@@ -495,8 +513,10 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     else:
         ax = fig.axes[0]
     if include_ci:
-        ax.fill_between(ci_lower.index, ci_lower, ci_upper, color=ci_color)
-    ax.plot(roller.median(), color=plot_color, **kwargs)
+        ax.fill_between(ci_lower.index,
+                        ci_lower, ci_upper, color=ci_color)
+    ax.plot(roller.median().index,
+            roller.median(), color=plot_color, **kwargs)
     ax.axhline(results_values.median(), c='k', ls='--')
     plt.ylabel('Degradation trend (%/yr)')
     fig.autofmt_xdate()
