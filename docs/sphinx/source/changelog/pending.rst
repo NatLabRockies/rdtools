@@ -8,7 +8,8 @@ Enhancements
   to return the calc_info['YoY_values'] as either right labeled (default), left or
   center labeled. (:issue:`459`)
 * :py:func:`~rdtools.plotting.degradation_timeseries_plot` now defaults to rolling
-  median, centered on the timestamp (pd.rolling(center=True)).
+  median, centered on the timestamp (pd.rolling(center=True)), and reduces
+  ``min_periods`` from ``rolling_days//2`` to ``rolling_days//4``.
   (:issue:`455`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``multi_yoy``
   (default False) to trigger multiple YoY degradation calculations similar to Hugo Quest et
@@ -27,6 +28,9 @@ Enhancements
 * Added new example notebook ``docs/Multi-year_on_year_example.ipynb`` demonstrating the
   ``label='center'`` and ``multi_yoy=True`` features of
   :py:func:`~rdtools.degradation.degradation_year_on_year`.  (:issue:`394`)
+* :py:meth:`~rdtools.analysis_chains.TrendAnalysis.sensor_analysis` and
+  :py:meth:`~rdtools.analysis_chains.TrendAnalysis.clearsky_analysis` now
+  explicitly default ``yoy_kwargs={"label": "right"}``.
 
 Bug Fixes
 ---------
@@ -43,15 +47,8 @@ Maintenance
 * Updated ``docs/notebook_requirements.txt`` to require ``numexpr>=2.10.2`` and
   ``tabulate>=0.9.0`` to satisfy pandas' optional dependency minimum versions and
   avoid related warnings/errors.
-
-Testing
--------
-* Added tests for error handling paths in :py:mod:`~rdtools.degradation`:
-  ``classical_decomposition`` missing/irregular data, ``year_on_year`` circular block
-  validation, no valid pairs error, and ``_mk_test`` edge cases (no trend, ties,
-  decreasing).
-* Added test for ``multi_yoy=True`` parameter in ``degradation_year_on_year``.
-* Set matplotlib backend to ``Agg`` in test ``conftest.py`` to avoid tkinter issues.
+* Removed trailing semicolons in example notebooks.
+* Added ``.coverage.*`` pattern to ``.gitignore``.
 
 Testing
 -------
@@ -64,6 +61,10 @@ Testing
   ``classical_decomposition`` missing/irregular data, ``year_on_year`` circular block
   validation, no valid pairs error, and ``_mk_test`` edge cases (no trend, ties,
   decreasing).
+* Added test for ``multi_yoy=True`` parameter in ``degradation_year_on_year``.
+* Added tests for :py:func:`~rdtools.plotting.degradation_timeseries_plot`
+  covering ``label='center'``, ``label='left'``, multi-YoY duplicate index
+  handling, and ``KeyError`` path.
 * Set matplotlib backend to ``Agg`` in test ``conftest.py`` to avoid tkinter issues.
 
 
