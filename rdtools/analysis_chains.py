@@ -1001,7 +1001,7 @@ class TrendAnalysis:
         )
 
     def sensor_analysis(
-        self, analyses=["yoy_degradation"], yoy_kwargs={"label": "right"}, srr_kwargs={}
+        self, analyses=None, yoy_kwargs=None, srr_kwargs=None
     ):
         """
         Perform entire sensor-based analysis workflow.
@@ -1011,7 +1011,7 @@ class TrendAnalysis:
         ---------
         analyses : list
             Analyses to perform as a list of strings. Valid entries are 'yoy_degradation'
-            and 'srr_soiling'
+            and 'srr_soiling'. Defaults to ``["yoy_degradation"]``.
         yoy_kwargs : dict
             kwargs to pass to :py:func:`rdtools.degradation.degradation_year_on_year`
             default is {"label": "right"}, which will right-label the YoY slope values.
@@ -1022,6 +1022,12 @@ class TrendAnalysis:
         -------
         None
         """
+        if analyses is None:
+            analyses = ["yoy_degradation"]
+        if yoy_kwargs is None:
+            yoy_kwargs = {"label": "right"}
+        if srr_kwargs is None:
+            srr_kwargs = {}
         self._sensor_preprocess()
         sensor_results = {}
 
@@ -1042,7 +1048,7 @@ class TrendAnalysis:
         self.results["sensor"] = sensor_results
 
     def clearsky_analysis(
-        self, analyses=["yoy_degradation"], yoy_kwargs={"label": "right"}, srr_kwargs={}
+        self, analyses=None, yoy_kwargs=None, srr_kwargs=None
     ):
         """
         Perform entire clear-sky-based analysis workflow. Results are stored
@@ -1052,7 +1058,7 @@ class TrendAnalysis:
         ---------
         analyses : list
             Analyses to perform as a list of strings. Valid entries are 'yoy_degradation'
-            and 'srr_soiling'
+            and 'srr_soiling'. Defaults to ``["yoy_degradation"]``.
         yoy_kwargs : dict
             kwargs to pass to :py:func:`rdtools.degradation.degradation_year_on_year`.
             default is {"label": "right"}, which will right-label the YoY slope values.
@@ -1063,6 +1069,12 @@ class TrendAnalysis:
         -------
         None
         """
+        if analyses is None:
+            analyses = ["yoy_degradation"]
+        if yoy_kwargs is None:
+            yoy_kwargs = {"label": "right"}
+        if srr_kwargs is None:
+            srr_kwargs = {}
 
         self._clearsky_preprocess()
         clearsky_results = {}
