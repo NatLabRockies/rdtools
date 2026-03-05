@@ -444,11 +444,11 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     ----------
     yoy_info : dict
         a dictionary with keys:
-
-        * YoY_values - pandas series of right-labeled year on year slopes
+        * YoY_values - pandas series of year on year slopes
     rolling_days: int, default 365
-        Number of days for rolling window. Note that the window must contain
-        at least 50% of datapoints to be included in rolling plot.
+        Number of days for rolling window. Note that 
+        the window must contain at least 25% of datapoints to be included in 
+        the rolling plot, and the rolling window is centered.
     include_ci : bool, default True
         calculate and plot 2-sigma confidence intervals along with rolling median
     fig     : matplotlib, optional
@@ -515,8 +515,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     if include_ci:
         ax.fill_between(ci_lower.index,
                         ci_lower, ci_upper, color=ci_color)
-    ax.plot(roller.median().index,
-            roller.median(), color=plot_color, **kwargs)
+    median = roller.median()
+    ax.plot(median.index,
+            median, color=plot_color, **kwargs)
     ax.axhline(results_values.median(), c='k', ls='--')
     plt.ylabel('Degradation trend (%/yr)')
     fig.autofmt_xdate()
