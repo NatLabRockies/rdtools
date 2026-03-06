@@ -16,7 +16,7 @@ you'll need to clone the RdTools source repository from Github with e.g.
 
 ::
 
-    git clone https://github.com/NREL/rdtools.git
+    git clone https://github.com/NatLabRockies/rdtools.git
 
 from the command line, or using a GUI git client like Github Desktop.  This
 will clone the entire git repository onto your computer.  

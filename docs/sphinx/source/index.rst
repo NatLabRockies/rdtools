@@ -187,7 +187,7 @@ and the specific DOI coresponding to that version from `Zenodo <https://doi.org/
    Martin Springer, Jiyang Yan, Kirsten Perry, Sandra Villamar, Will Vining,
    Gregory Kimball, Daniel Ruth, Noah Moyer, Quyen Nguyen, Dirk Jordan,
    Matthew Muller, and Chris Deline, RdTools, version {insert version},
-   Compuer Software, https://github.com/NREL/rdtools. DOI:{insert DOI}
+   Compuer Software, https://github.com/NatLabRockies/rdtools. DOI:{insert DOI}
 
 The underlying workflow of RdTools has been published in several places.
 If you use RdTools in a published work, you may also wish to cite the following as
@@ -275,5 +275,5 @@ Indices and tables
 
 
 .. links and references
-.. _release: https://github.com/NREL/rdtools/releases
-.. _github: https://github.com/NREL/rdtools
+.. _release: https://github.com/NatLabRockies/rdtools/releases
+.. _github: https://github.com/NatLabRockies/rdtools

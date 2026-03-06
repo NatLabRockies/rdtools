@@ -85,10 +85,10 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/NREL/rdtools"
-"Bug Tracker" = "https://github.com/NREL/rdtools/issues"
+Homepage = "https://github.com/NatLabRockies/rdtools"
+"Bug Tracker" = "https://github.com/NatLabRockies/rdtools/issues"
 Documentation = "https://rdtools.readthedocs.io/"
-"Source Code" = "https://github.com/NREL/rdtools"
+"Source Code" = "https://github.com/NatLabRockies/rdtools"
 
 [tool.setuptools_scm]
 
