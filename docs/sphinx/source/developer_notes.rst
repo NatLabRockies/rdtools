@@ -24,9 +24,109 @@ will clone the entire git repository onto your computer.
 Installing RdTools dependencies
 -------------------------------
 
-The packages necessary to run RdTools itself can be installed with ``pip``.
-You can install the dependencies along with RdTools itself from
-`PyPI <https://pypi.org/project/rdtools/>`_:
+RdTools uses `pixi <https://pixi.sh>`_ for reproducible environment management.
+Pixi creates isolated environments from the lockfile (``pixi.lock``), ensuring
+every contributor gets the exact same package versions.
+
+To install pixi, follow the instructions at https://pixi.sh.
+
+Once pixi is installed, navigate to the repository root and run:
+
+::
+
+    pixi install
+
+This creates the default environment with RdTools and its core dependencies.
+Pixi environments are stored locally in ``.pixi/`` (gitignored) and do not
+interfere with other Python environments on your system.
+
+To run a command inside a pixi environment, use ``pixi run``:
+
+::
+
+    pixi run python -c "import rdtools; print(rdtools.__version__)"
+
+.. _pixi-environments:
+
+Available pixi environments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RdTools defines several pixi environments in ``pyproject.toml``:
+
+- **core** — bare RdTools with core dependencies only (Python 3.13)
+- **default** — RdTools + notebook extras for regular users (Python 3.13)
+- **dev** — notebooks + test extras combined (Python 3.13); recommended for day-to-day development (alias for **dev-py313**)
+- **dev-py310** through **dev-py314** — full dev environment pinned to a specific Python version
+- **dev-min** — test-only environment with minimum supported dependency versions (Python 3.10)
+
+For most contributors, the **dev** environment is the best starting point
+because it includes everything needed to run the test suite, launch Jupyter
+notebooks, and check code style:
+
+::
+
+    pixi install -e dev
+    pixi run -e dev test   # run the test suite
+    pixi run -e dev lab    # launch Jupyter Lab
+
+To test against a specific Python version:
+
+::
+
+    pixi run -e dev-py310 test
+
+.. _updating-pixi-environments:
+
+Updating pixi environments
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When ``pyproject.toml`` changes (e.g. a dependency is added, removed, or its
+version constraint is updated), the pixi lockfile must be regenerated:
+
+1. **Re-solve dependencies** — run ``pixi update`` from the repository root.
+   This re-solves all environments against the current ``pyproject.toml``
+   constraints and writes a new ``pixi.lock``:
+
+   ::
+
+       pixi update
+
+2. **Verify environments install correctly** — run ``pixi install`` to
+   re-create environments from the updated lockfile:
+
+   ::
+
+       pixi install
+
+3. **Run tests** to make sure nothing is broken:
+
+   ::
+
+       pixi run -e dev test
+
+4. **Commit both files** — always commit ``pyproject.toml`` and ``pixi.lock``
+   together so that CI and other contributors stay in sync:
+
+   ::
+
+       git add pyproject.toml pixi.lock
+       git commit -m "Update dependencies"
+
+.. note::
+    If you only want to update a single package, you can target it:
+    ``pixi update numpy``. To update packages only within a specific
+    environment, use ``pixi update -e dev numpy``.
+
+.. note::
+    Contributors who pull changes that include an updated ``pixi.lock``
+    just need to run ``pixi install`` to get the new environment.
+
+Installing without pixi
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you prefer not to use pixi, you can still install RdTools and its
+dependencies with pip. The packages necessary to run RdTools itself can be
+installed from `PyPI <https://pypi.org/project/rdtools/>`_:
 
 ::
 
@@ -73,19 +173,28 @@ are only needed if you want to contribute source code to RdTools.
     documentation and run its test suite.  We recommend doing this in a virtual
     environment to keep package installations between projects separate!
 
-Optional dependencies can be installed with the special
-`syntax <https://setuptools.readthedocs.io/en/latest/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies>`_:
+With pixi (recommended):
 
 ::
 
-    pip install rdtools[test]  # test suite dependencies
+    pixi install -e dev          # all development dependencies (recommended)
+    pixi install -e dev-py310    # dev environment with Python 3.10
+    pixi install -e dev-min      # minimum supported dependency versions
+
+With pip:
+
+::
+
+    pip install rdtools[dev]   # notebooks + test dependencies
+    pip install rdtools[test]  # test suite dependencies only
     pip install rdtools[doc]   # documentation dependencies
 
 Or, if your local repository has an updated dependencies list:
 
 ::
 
-    pip install .[test]  # test suite dependencies
+    pip install .[dev]   # notebooks + test dependencies
+    pip install .[test]  # test suite dependencies only
     pip install .[doc]   # documentation dependencies
 
 
@@ -96,7 +205,13 @@ RdTools uses `pytest <https://docs.pytest.org/en/latest/>`_ to run its test
 suite.  If you haven't already, install the testing dependencies
 (:ref:`installing-optional-dependencies`).
 
-To run the entire test suite, navigate to the git repo folder and run
+To run the entire test suite with pixi:
+
+::
+
+    pixi run -e dev test
+
+Or directly with pytest:
 
 ::
 
@@ -142,7 +257,7 @@ and compare outputs for you:
 
 ::
 
-    pytest --nbval docs/system_availability_example.ipynb
+    pixi run -e dev pytest --nbval docs/system_availability_example.ipynb
 
 Some helpful options are ``--nbdime`` to display a visual before/after diff
 and ``--sanitize-with docs/nbval_sanitization_rules.cfg`` to ignore nuisance
@@ -150,7 +265,13 @@ differences like the username shown in warning messages:
 
 ::
 
-    pytest --nbval --nbdime --sanitize-with docs/nbval_sanitization_rules.cfg docs/system_availability_example.ipynb
+    pixi run -e dev pytest --nbval --nbdime --sanitize-with docs/nbval_sanitization_rules.cfg docs/system_availability_example.ipynb
+
+Or to run all notebooks at once using the pixi task:
+
+::
+
+    pixi run -e dev nbval
 
 
 Checking for code style
@@ -163,13 +284,13 @@ folder and run
 
 ::
 
-    flake8
+    pixi run -e dev flake8
 
 Or, for a more detailed report:
 
 ::
 
-    flake8 --count --statistics --show-source
+    pixi run -e dev flake8 --count --statistics --show-source
 
 
 Building documentation locally

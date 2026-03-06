@@ -11,6 +11,7 @@
 .coveralls.yml
 .coverage
 .coverage.*
+coverage.xml
 htmlcov/
 
 # ignore test cache
@@ -37,6 +38,9 @@ rdtools.egg-info*
 .\#*
 
 *.pickle
+
+# pixi environments (local, not committed)
+.pixi/
 
 # ignore vscode settings
 .vscode/
