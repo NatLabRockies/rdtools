@@ -40,7 +40,8 @@ rdtools.egg-info*
 *.pickle
 
 # pixi environments (local, not committed)
-.pixi/
+.pixi/*
+!.pixi/config.toml
 
 # ignore vscode settings
 .vscode/

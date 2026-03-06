@@ -40,3 +40,12 @@ Bug Fixes
 ---------
 * Fixed broken link to TrendAnalysis example in Sphinx index page.
   (:pull:`492`)
+
+Requirements
+------------
+* Bumped minimum ``xgboost`` version from 1.6.0 to 1.7.0 to fix
+  ``pkg_resources`` import error in environments without ``setuptools``.
+  (:pull:`493`)
+* Bumped minimum ``pvlib`` version from 0.12.0 to 0.13.1 to include the
+  ``detect_clearsky()`` bug fix (pvlib GH2550). (:pull:`493`)
+

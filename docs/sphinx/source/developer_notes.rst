@@ -205,32 +205,43 @@ RdTools uses `pytest <https://docs.pytest.org/en/latest/>`_ to run its test
 suite.  If you haven't already, install the testing dependencies
 (:ref:`installing-optional-dependencies`).
 
-To run the entire test suite with pixi:
+With pixi
+~~~~~~~~~
+
+Run the full test suite in the dev environment:
 
 ::
 
     pixi run -e dev test
 
-Or directly with pytest:
+Run a single test module:
 
 ::
 
-    pytest
+    pixi run -e dev pytest rdtools/test/soiling_test.py
 
-For convenience, pytest lets you run tests for a single module if you don't
-want to wait around for the entire suite to finish:
+Run a single test function:
 
 ::
 
+    pixi run -e dev pytest rdtools/test/soiling_test.py::test_soiling_srr
+
+Without pixi
+~~~~~~~~~~~~~
+
+If you installed RdTools and its test dependencies with pip, you can invoke
+pytest directly:
+
+::
+
+    pytest rdtools/test/
     pytest rdtools/test/soiling_test.py
-
-And even a single test function:
-
-::
-
     pytest rdtools/test/soiling_test.py::test_soiling_srr
 
-You can also evaluate code coverage when running the test suite using the
+Measuring code coverage
+~~~~~~~~~~~~~~~~~~~~~~~
+
+You can evaluate code coverage when running the test suite using the
 `coverage <https://coverage.readthedocs.io>`_ package:
 
 ::
@@ -240,11 +251,19 @@ You can also evaluate code coverage when running the test suite using the
 
 The first line runs the test suite and keeps track of exactly what lines of
 code were run during test execution.  The second line then prints out a
-summary report showing how much much of each source file was
-executed in the test suite.  If a percentage is below 100, that means a
-function isn't tested or a branch inside a function isn't tested.  To get
-specific details, you can run ``coverage html`` to generate a detailed HTML
-report at ``htmlcov/index.html`` to view in a browser.
+summary report showing how much of each source file was executed in the
+test suite.  If a percentage is below 100, that means a function isn't tested
+or a branch inside a function isn't tested.  To get specific details, you can
+run ``coverage html`` to generate a detailed HTML report at
+``htmlcov/index.html`` to view in a browser.
+
+Note that the pixi ``test`` task already includes ``--cov`` flags, so coverage
+data is collected automatically when running ``pixi run -e dev test``.
+
+RdTools also uses `Codecov <https://codecov.io/gh/NatLabRockies/rdtools>`_ to
+track coverage over time.  Coverage reports are uploaded automatically by CI
+after each test run.  Pull requests will show a Codecov status check indicating
+whether the change increases or decreases overall coverage.
 
 
 Running the notebooks as tests
