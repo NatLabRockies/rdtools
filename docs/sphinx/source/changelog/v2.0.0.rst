@@ -97,7 +97,7 @@ Example Updates
   variable names (:pull:`139`).
 * Add soiling section to the original example notebook.
 * Add a new example notebook that analyzes data from a PV system located at
-  NREL's South Table Mountain campus (PVDAQ system #4) (:pull:`171`).
+  NLR's South Table Mountain campus (PVDAQ system #4) (:pull:`171`).
 * Explicitly register pandas datetime converters which were `deprecated <https://github.com/pandas-dev/pandas/issues/18301>`_.
 * Add new ``system_availability_example.ipynb`` notebook (:pull:`131`)
 

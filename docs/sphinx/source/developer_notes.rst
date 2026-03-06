@@ -19,13 +19,13 @@ you'll need to clone the RdTools source repository from Github with e.g.
     git clone https://github.com/NatLabRockies/rdtools.git
 
 from the command line, or using a GUI git client like Github Desktop.  This
-will clone the entire git repository onto your computer.  
+will clone the entire git repository onto your computer.
 
 Installing RdTools dependencies
 -------------------------------
 
 The packages necessary to run RdTools itself can be installed with ``pip``.
-You can install the dependencies along with RdTools itself from 
+You can install the dependencies along with RdTools itself from
 `PyPI <https://pypi.org/project/rdtools/>`_:
 
 ::
@@ -66,14 +66,14 @@ Installing optional dependencies
 
 RdTools has extra dependencies for running its test suite and building its
 documentation.  These packages aren't necessary for running RdTools itself and
-are only needed if you want to contribute source code to RdTools.  
+are only needed if you want to contribute source code to RdTools.
 
 .. note::
     These will install RdTools along with other packages necessary to build its
     documentation and run its test suite.  We recommend doing this in a virtual
     environment to keep package installations between projects separate!
 
-Optional dependencies can be installed with the special 
+Optional dependencies can be installed with the special
 `syntax <https://setuptools.readthedocs.io/en/latest/setuptools.html#declaring-extras-optional-features-with-their-own-dependencies>`_:
 
 ::
@@ -115,7 +115,7 @@ And even a single test function:
 
     pytest rdtools/test/soiling_test.py::test_soiling_srr
 
-You can also evaluate code coverage when running the test suite using the 
+You can also evaluate code coverage when running the test suite using the
 `coverage <https://coverage.readthedocs.io>`_ package:
 
 ::
@@ -129,7 +129,7 @@ summary report showing how much much of each source file was
 executed in the test suite.  If a percentage is below 100, that means a
 function isn't tested or a branch inside a function isn't tested.  To get
 specific details, you can run ``coverage html`` to generate a detailed HTML
-report at ``htmlcov/index.html`` to view in a browser.  
+report at ``htmlcov/index.html`` to view in a browser.
 
 
 Running the notebooks as tests
@@ -214,7 +214,7 @@ docs should result in output like this:
     dumping search index in English (code: en) ... done
     dumping object inventory... done
     build succeeded.
-    
+
     The HTML pages are in build\html.
 
 If you get an error like ``Pandoc wasn't found``, you can install it with conda:
@@ -230,7 +230,7 @@ Contributing
 ------------
 
 Community participation is welcome!  New contributions should be based on the
-``development`` branch as the ``master`` branch is used only for releases.  
+``development`` branch as the ``master`` branch is used only for releases.
 
 RdTools follows the `PEP 8 <https://www.python.org/dev/peps/pep-0008/>`_ style guide.
 We recommend setting up your text editor to automatically highlight style
@@ -238,7 +238,7 @@ violations because it's easy to miss some issues (trailing whitespace, etc) othe
 
 Additionally, our documentation is built in part from docstrings in the source
 code.  These docstrings must be in `NumpyDoc format <https://numpydoc.readthedocs.io/en/latest/format.html>`_
-to be rendered correctly in the documentation.  
+to be rendered correctly in the documentation.
 
 Finally, all code should be tested.  Some older tests in RdTools use the unittest
-module, but new tests should all use pytest. 
+module, but new tests should all use pytest.
