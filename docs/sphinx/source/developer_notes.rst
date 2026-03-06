@@ -274,6 +274,27 @@ Or to run all notebooks at once using the pixi task:
     pixi run -e dev nbval
 
 
+Re-running and saving notebook outputs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If notebook outputs need to be refreshed (e.g. after a code change that
+affects plots or printed results), you can re-execute all notebooks in place
+using ``jupyter nbconvert``:
+
+::
+
+    pixi run -e dev jupyter nbconvert --to notebook --execute --inplace docs/*.ipynb
+
+Or a single notebook:
+
+::
+
+    pixi run -e dev jupyter nbconvert --to notebook --execute --inplace docs/TrendAnalysis_example.ipynb
+
+This overwrites each notebook file with freshly executed outputs.  Review the
+diffs before committing to make sure the changes look correct.
+
+
 Checking for code style
 -----------------------
 
