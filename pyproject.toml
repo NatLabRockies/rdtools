@@ -164,12 +164,12 @@ filterpy = "==1.4.2"
 [tool.pixi.environments]
 core = { features = ["py313"], solve-group = "default" }
 default = { features = ["notebooks", "py313"], solve-group = "default" }
-dev = { features = ["dev", "py313"], solve-group = "default" }
-dev-py310 = { features = ["dev", "py310"] }
-dev-py311 = { features = ["dev", "py311"] }
-dev-py312 = { features = ["dev", "py312"] }
-dev-py313 = { features = ["dev", "py313"], solve-group = "default" }
-dev-py314 = { features = ["dev", "py314"] }
+dev = { features = ["notebooks", "dev", "py313"], solve-group = "default" }
+dev-py310 = { features = ["notebooks", "dev", "py310"] }
+dev-py311 = { features = ["notebooks", "dev", "py311"] }
+dev-py312 = { features = ["notebooks", "dev", "py312"] }
+dev-py313 = { features = ["notebooks", "dev", "py313"], solve-group = "default" }
+dev-py314 = { features = ["notebooks", "dev", "py314"] }
 dev-min = { features = ["test", "min", "py310"] }
 
 # --- Tasks ---
@@ -183,6 +183,5 @@ lab = "jupyter lab docs/"
 test = "pytest --cov=rdtools --cov-report=xml rdtools/test/"
 
 [tool.pixi.feature.dev.tasks]
-lab = "jupyter lab docs/"
 test = "pytest --cov=rdtools --cov-report=xml rdtools/test/"
 nbval = "pytest --nbval --nbval-sanitize-with docs/nbval_sanitization_rules.cfg docs/"
