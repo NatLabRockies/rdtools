@@ -11,9 +11,6 @@ Bug Fixes
   detection to incorrectly flag all data points as gaps. Affected functions:
   ``_t_step_nanoseconds``, ``energy_from_power``, and ``_aggregate``.
   (:pull:`494`)
-* Updated expected test values in ``test_clearsky_pvlib_analysis`` and
-  ``test_sensor_clearsky_pvlib_analysis`` to match corrected normalization
-  output, with wider CI tolerance to account for bootstrap nondeterminism.
 
 Requirements
 ------------
