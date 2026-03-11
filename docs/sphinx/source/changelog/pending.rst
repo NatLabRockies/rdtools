@@ -43,6 +43,9 @@ Bug Fixes
 
 Requirements
 ------------
+* Added ``libomp`` as a platform-specific conda dependency for macOS (osx-64
+  and osx-arm64) to fix XGBoost installation issues. Users no longer need to
+  install libomp via Homebrew. (:pull:`493`)
 * Bumped minimum ``xgboost`` version from 1.6.0 to 1.7.0 to fix
   ``pkg_resources`` import error in environments without ``setuptools``.
   (:pull:`493`)

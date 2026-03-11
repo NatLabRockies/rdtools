@@ -116,6 +116,13 @@ rdtools = { path = ".", editable = true }
 [tool.pixi.dependencies]
 python = ">=3.10"
 
+# macOS requires libomp for XGBoost
+[tool.pixi.target.osx-64.dependencies]
+libomp = "*"
+
+[tool.pixi.target.osx-arm64.dependencies]
+libomp = "*"
+
 # --- Python version features ---
 
 [tool.pixi.feature.py310.dependencies]
