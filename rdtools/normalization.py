@@ -334,7 +334,7 @@ def _t_step_nanoseconds(time_series):
     in nanoseconds
     '''
     # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
-    t_steps = pd.Series(time_series.index).diff().dt.total_seconds() * 1e9
+    t_steps = (pd.Series(time_series.index).diff().dt.total_seconds() * 1e9).round()
     t_steps.index = time_series.index
     return t_steps
 
@@ -404,7 +404,7 @@ def energy_from_power(power, target_frequency=None, max_timedelta=None,
     if max_timedelta is None:
         max_interval_nanoseconds = median_step_ns
     else:
-        max_interval_nanoseconds = max_timedelta.total_seconds() * 10.0**9
+        max_interval_nanoseconds = round(max_timedelta.total_seconds() * 10.0**9)
     # set max_timedelta for use in interpolate and _aggregate
     max_timedelta = pd.to_timedelta(f'{max_interval_nanoseconds} ns')
     try:
@@ -483,13 +483,13 @@ def _aggregate(time_series, target_frequency, max_timedelta, series_type):
 
     # Identify gaps (including from nans) bigger than max_time_delta
     # Use total_seconds() for resolution-agnostic calculation (pandas 3.0+)
-    t_diffs = pd.Series(time_series.index).diff().dt.total_seconds() * 1e9
+    t_diffs = (pd.Series(time_series.index).diff().dt.total_seconds() * 1e9).round()
     t_diffs.index = time_series.index
     # Keep track of the gap size but with refilled NaNs and new
     # timestamps from target freq
     t_diffs = t_diffs.reindex(union_index, method='bfill')
 
-    max_interval_nanoseconds = max_timedelta.total_seconds() * 1e9
+    max_interval_nanoseconds = round(max_timedelta.total_seconds() * 1e9)
 
     gap_mask = t_diffs > max_interval_nanoseconds
     if time_series.index[0] != union_index[0]:
