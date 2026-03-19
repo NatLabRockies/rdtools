@@ -48,10 +48,10 @@ INSTALL_REQUIRES = [
     "scipy >= 1.8.1",
     "h5py >= 3.7.0",
     "plotly>=4.0.0",
-    "xgboost >= 1.6.0",
-    "pvlib >= 0.12.0",
+    "xgboost >= 1.7.0.post0",
+    "pvlib >= 0.13.1",
     "scikit-learn >= 1.1.3, != 1.6.0",
-    "arch >= 5.0",
+    "arch >= 5.6",
     "filterpy >= 1.4.2",
 ]
 
