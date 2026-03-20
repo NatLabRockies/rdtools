@@ -25,17 +25,43 @@ command line:
 pip install rdtools
 ```
 
+Optional extras are available:
+
+```
+pip install rdtools[notebooks]  # Jupyter and notebook dependencies
+pip install rdtools[test]       # pytest, coverage, flake8
+pip install rdtools[dev]        # notebooks + test combined
+```
+
+Alternatively, RdTools uses [pixi](https://pixi.sh) for reproducible
+environment management. To get started with pixi:
+
+```
+pixi install          # default environment (core + notebooks)
+pixi run lab          # launch Jupyter Lab
+```
+
+For development, use the `dev` environment which includes both notebook
+and test dependencies:
+
+```
+pixi shell -e dev     # activate the dev environment
+pixi run -e dev test  # run pytest with coverage
+pixi run -e dev nbval # validate notebooks
+pixi run -e dev lab   # launch Jupyter Lab
+```
+
 For API documentation and full examples, please see the [documentation](https://rdtools.readthedocs.io).
 
-RdTools currently is tested on Python 3.9+.
+RdTools currently is tested on Python 3.10+.
 
 ## Citing RdTools
 
 To cite RdTools, please use the following along with the version number
 and the specific DOI coresponding to that version from [Zenodo](https://doi.org/10.5281/zenodo.1210316):
 
--  Michael G. Deceglie, Kevin Anderson,  Adam Shinn, Ambarish Nag, Mark Mikofski,
-   Martin Springer, Jiyang Yan, Kirsten Perry, Sandra Villamar, Will Vining,
+-  Michael G. Deceglie, Martin Springer, Kevin Anderson,  Adam Shinn, Kirsten Perry, Ambarish Nag,
+   Mark Mikofski, Jiyang Yan, Sandra Villamar, Will Vining,
    Gregory Kimball, Daniel Ruth, Noah Moyer, Quyen Nguyen, Dirk Jordan,
    Matthew Muller, and Chris Deline, RdTools, version {insert version}, Computer Software,
    https://github.com/NatLabRockies/rdtools. DOI:{insert DOI}
