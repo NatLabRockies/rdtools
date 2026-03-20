@@ -279,13 +279,12 @@ and compare outputs for you:
 
     pixi run -e dev pytest --nbval docs/system_availability_example.ipynb
 
-Some helpful options are ``--nbdime`` to display a visual before/after diff
-and ``--sanitize-with docs/nbval_sanitization_rules.cfg`` to ignore nuisance
-differences like the username shown in warning messages:
+A helpful option is ``--sanitize-with docs/nbval_sanitization_rules.cfg`` to
+ignore nuisance differences like the username shown in warning messages:
 
 ::
 
-    pixi run -e dev pytest --nbval --nbdime --sanitize-with docs/nbval_sanitization_rules.cfg docs/system_availability_example.ipynb
+    pixi run -e dev pytest --nbval --sanitize-with docs/nbval_sanitization_rules.cfg docs/system_availability_example.ipynb
 
 Or to run all notebooks at once using the pixi task:
 
