@@ -16,3 +16,39 @@ Maintenance
 * Updated GitHub URLs and references from ``NREL/rdtools`` to
   ``NatLabRockies/rdtools`` and email addresses from ``@nrel.gov`` to
   ``@nlr.gov``. (:pull:`492`)
+* Adopted `pixi <https://pixi.sh>`_ for reproducible environment management.
+  Replaced ``requirements.txt``, ``requirements-min.txt``, and
+  ``docs/notebook_requirements.txt`` with pixi environments and a lockfile.
+  (:pull:`492`)
+* Rewrote CI workflows (``pytest.yaml``, ``nbval.yaml``) to use pixi via
+  ``prefix-dev/setup-pixi`` and removed the ``requirements.yaml`` workflow.
+  (:pull:`492`)
+* Bumped minimum ``arch`` version from 5.0 to 5.6. (:pull:`492`)
+* Added Python 3.14 to the test matrix and package classifiers.
+  (:pull:`492`)
+* Simplified pixi environments: ``core`` (bare), ``default`` (notebooks),
+  ``dev`` (notebooks + test, alias for ``dev-py313``), ``dev-py310`` through
+  ``dev-py314`` (full dev per Python version), and ``dev-min`` (minimum
+  dependency versions). All shared environments pin Python 3.13.
+  (:pull:`492`)
+* Added composable pip extras: ``[notebooks]``, ``[test]``, ``[dev]``,
+  ``[doc]``, and ``[all]``. (:pull:`492`)
+* Updated documentation (README, Sphinx index, developer notes, and example
+  notebook setup cells) for pixi and pip extras. (:pull:`492`)
+
+Bug Fixes
+---------
+* Fixed broken link to TrendAnalysis example in Sphinx index page.
+  (:pull:`492`)
+
+Requirements
+------------
+* Added ``llvm-openmp`` (the conda-forge name for libomp) as a platform-specific
+  conda dependency for macOS (osx-64 and osx-arm64) to fix XGBoost installation
+  issues. Users no longer need to install libomp via Homebrew. (:pull:`493`)
+* Bumped minimum ``xgboost`` version from 1.6.0 to 1.7.0 to fix
+  ``pkg_resources`` import error in environments without ``setuptools``.
+  (:pull:`493`)
+* Bumped minimum ``pvlib`` version from 0.12.0 to 0.13.1 to include the
+  ``detect_clearsky()`` bug fix (pvlib GH2550). (:pull:`493`)
+
