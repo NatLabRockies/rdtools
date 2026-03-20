@@ -1,13 +1,13 @@
 <img src="./docs/sphinx/source/_images/logo_horizontal_highres.png" width="500" alt="RdTools logo"/>
 
 Master branch:
-[![Build Status](https://github.com/NREL/rdtools/workflows/pytest/badge.svg?branch=master)](https://github.com/NREL/rdtools/actions?query=branch%3Amaster)
+[![Build Status](https://github.com/NatLabRockies/rdtools/workflows/pytest/badge.svg?branch=master)](https://github.com/NatLabRockies/rdtools/actions?query=branch%3Amaster)
 
 Development branch:
-[![Build Status](https://github.com/NREL/rdtools/workflows/pytest/badge.svg?branch=development)](https://github.com/NREL/rdtools/actions?query=branch%3Adevelopment)
+[![Build Status](https://github.com/NatLabRockies/rdtools/workflows/pytest/badge.svg?branch=development)](https://github.com/NatLabRockies/rdtools/actions?query=branch%3Adevelopment)
 
 Code coverage:
-[![codecov](https://codecov.io/gh/NREL/rdtools/graph/badge.svg?token=K2HDjFkBws)](https://codecov.io/gh/NREL/rdtools)
+[![codecov](https://codecov.io/gh/NatLabRockies/rdtools/graph/badge.svg?token=K2HDjFkBws)](https://codecov.io/gh/NatLabRockies/rdtools)
 
 RdTools is an open-source library to support reproducible technical analysis of
 time series data from photovoltaic energy systems. The library aims to provide
@@ -38,7 +38,7 @@ and the specific DOI coresponding to that version from [Zenodo](https://doi.org/
    Martin Springer, Jiyang Yan, Kirsten Perry, Sandra Villamar, Will Vining,
    Gregory Kimball, Daniel Ruth, Noah Moyer, Quyen Nguyen, Dirk Jordan,
    Matthew Muller, and Chris Deline, RdTools, version {insert version}, Computer Software,
-   https://github.com/NREL/rdtools. DOI:{insert DOI}
+   https://github.com/NatLabRockies/rdtools. DOI:{insert DOI}
 
 The underlying workflow of RdTools has been published in several places.
 If you use RdTools in a published work, you may also wish to cite the following as
@@ -76,5 +76,5 @@ Other useful references which may also be consulted for degradation rate methodo
 
 ## Further Instructions and Updates
 
-Check out the [wiki](https://github.com/NREL/rdtools/wiki) for additional usage documentation, and for information on development goals and framework.
+Check out the [wiki](https://github.com/NatLabRockies/rdtools/wiki) for additional usage documentation, and for information on development goals and framework.
 

@@ -13,3 +13,6 @@ Maintenance
   ``MANIFEST.in``, and ``rdtools/_version.py``. (:pull:`488`)
 * Updated ``rdtools/__init__.py`` to use ``importlib.metadata`` for version
   retrieval instead of versioneer. (:pull:`488`)
+* Updated GitHub URLs and references from ``NREL/rdtools`` to
+  ``NatLabRockies/rdtools`` and email addresses from ``@nrel.gov`` to
+  ``@nlr.gov``. (:pull:`492`)
