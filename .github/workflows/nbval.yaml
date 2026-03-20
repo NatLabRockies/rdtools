@@ -21,13 +21,9 @@ jobs:
     - uses: prefix-dev/setup-pixi@v0.8.3
       with:
         environments: dev
-    - name: Execute notebook
-      run: |
-        pixi run -e dev jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=600 --output ${{ matrix.notebook-file }} docs/${{ matrix.notebook-file }}
     - name: Validate notebook output
       run: |
-        # --nbval-sanitize-with:  pre-process text to remove irrelevant differences (e.g. warning filepaths)
-        pixi run -e dev pytest --nbval --nbval-lax --nbval-sanitize-with docs/nbval_sanitization_rules.cfg docs/${{ matrix.notebook-file }}
+        pixi run -e dev pytest --nbval --nbval-sanitize-with docs/nbval_sanitization_rules.cfg docs/${{ matrix.notebook-file }}
     - name: Convert notebook to HTML
       run: |
         mkdir docs/artifacts
