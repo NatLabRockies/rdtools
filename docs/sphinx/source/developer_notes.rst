@@ -168,7 +168,6 @@ Installing optional dependencies
 RdTools has extra dependencies for running its test suite and building its
 documentation.  These packages aren't necessary for running RdTools itself and
 are only needed if you want to contribute source code to RdTools.
-are only needed if you want to contribute source code to RdTools.
 
 .. note::
     These will install RdTools along with other packages necessary to build its
