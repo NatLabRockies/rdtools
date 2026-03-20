@@ -40,6 +40,8 @@ Bug Fixes
 ---------
 * Fixed broken link to TrendAnalysis example in Sphinx index page.
   (:pull:`492`)
+* Fixed README CI status badges using a deprecated GitHub Actions badge URL
+  format. (:pull:`497`)
 
 Requirements
 ------------

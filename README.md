@@ -1,10 +1,10 @@
 <img src="./docs/sphinx/source/_images/logo_horizontal_highres.png" width="500" alt="RdTools logo"/>
 
 Master branch:
-[![Build Status](https://github.com/NatLabRockies/rdtools/workflows/pytest/badge.svg?branch=master)](https://github.com/NatLabRockies/rdtools/actions?query=branch%3Amaster)
+[![Build Status](https://github.com/NatLabRockies/rdtools/actions/workflows/pytest.yaml/badge.svg?branch=master)](https://github.com/NatLabRockies/rdtools/actions/workflows/pytest.yaml?query=branch%3Amaster)
 
 Development branch:
-[![Build Status](https://github.com/NatLabRockies/rdtools/workflows/pytest/badge.svg?branch=development)](https://github.com/NatLabRockies/rdtools/actions?query=branch%3Adevelopment)
+[![Build Status](https://github.com/NatLabRockies/rdtools/actions/workflows/pytest.yaml/badge.svg?branch=development)](https://github.com/NatLabRockies/rdtools/actions/workflows/pytest.yaml?query=branch%3Adevelopment)
 
 Code coverage:
 [![codecov](https://codecov.io/gh/NatLabRockies/rdtools/graph/badge.svg?token=K2HDjFkBws)](https://codecov.io/gh/NatLabRockies/rdtools)
