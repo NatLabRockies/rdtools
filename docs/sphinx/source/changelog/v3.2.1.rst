@@ -43,6 +43,9 @@ Bug Fixes
 
 Requirements
 ------------
+* Replaced the unmaintained ``filterpy`` dependency with its maintained fork
+  ``bayesian-filters``, which provides the same API and fixes
+  ``SyntaxWarning`` on Python 3.13+. (:pull:`494`)
 * Added ``llvm-openmp`` (the conda-forge name for libomp) as a platform-specific
   conda dependency for macOS (osx-64 and osx-arm64) to fix XGBoost installation
   issues. Users no longer need to install libomp via Homebrew. (:pull:`493`)
