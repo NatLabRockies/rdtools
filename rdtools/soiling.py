@@ -13,8 +13,8 @@ import warnings
 import pandas as pd
 import numpy as np
 from scipy.stats.mstats import theilslopes
-from filterpy.kalman import KalmanFilter
-from filterpy.common import Q_discrete_white_noise
+from bayesian_filters.kalman import KalmanFilter
+from bayesian_filters.common import Q_discrete_white_noise
 import itertools
 import bisect
 import time
