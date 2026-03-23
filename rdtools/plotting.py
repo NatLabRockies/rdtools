@@ -524,3 +524,143 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     fig.autofmt_xdate()
 
     return fig
+
+
+
+def degradation_timeseries_plot_2(yoy_info, rolling_days=365, include_ci=True,
+                                fig=None, plot_color=None, ci_color=None, **kwargs):
+    '''
+    Plot resampled time series of degradation trend with time
+
+    Parameters
+    ----------
+    yoy_info : dict
+        a dictionary with keys:
+        * YoY_values - pandas series of year on year slopes
+    rolling_days: int, default 365
+        Number of days for rolling window. Note that
+        the window must contain at least 25% of datapoints to be included in
+        the rolling plot, and the rolling window is centered.
+    include_ci : bool, default True
+        calculate and plot 2-sigma confidence intervals along with rolling median
+    fig     : matplotlib, optional
+        fig object to add new plot to (first set of axes only)
+    plot_color : str, optional
+        color of the timeseries trendline
+    ci_color : str, optional
+        color of the confidence interval 'fuzz'
+    kwargs :
+        Extra parameters passed to matplotlib.pyplot.axis.plot()
+
+    Note
+    ----
+    It should be noted that ``yoy_info`` is an output
+    from :py:func:`rdtools.degradation.degradation_year_on_year`.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+    '''
+
+    def _bootstrap(x, percentile, reps):
+        # stolen from degradation_year_on_year
+        n1 = len(x)
+        xb1 = np.random.choice(x, (n1, reps), replace=True)
+        mb1 = np.nanmedian(xb1, axis=0)
+        return np.percentile(mb1, percentile)
+    
+    def _roll_median(df, win_right, rolling_days, min_periods):
+        """
+        rolling median
+        df includes following columns: dt_right, dt_left, yoy
+        win_right: Datetime of the right end of the rolling window
+        rolling_days: number of days in the rolling window
+        min_periods: minimum number of points in the rolling window to return a value
+
+        returns: median of yoy values if any part of the slope is in the rolling window, or NaN if there are 
+            less than min_periods points. Time index of the returned value is win_right - rolling_days/2
+        """
+        win_left = win_right - pd.Timedelta(days=rolling_days)
+        in_window = (df['dt_left'] <= win_right) & (df['dt_right'] >= win_left)
+        if in_window.sum() < min_periods:
+            return np.nan
+        else:
+            return df.loc[in_window, 'yoy'].median()
+
+
+
+    try:
+        results = yoy_info['YoY_times'].join(yoy_info['YoY_values'])
+    except KeyError:
+        raise KeyError("yoy_info input dictionary does not contain keys `YoY_times` and `YoY_values`.")
+
+    if plot_color is None:
+        plot_color = 'tab:orange'
+    if ci_color is None:
+        ci_color = 'C0'
+
+    if yoy_info['YoY_values'].index.has_duplicates:
+        multi_yoy = True
+        # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
+        warnings.warn(
+            "Input `yoy_info['YoY_values']` appears to have multiple annual "
+            "slopes per day, which is the case if "
+            "degradation_year_on_year(multi_yoy=True). "
+            "Long-term multi-yoy slopes will tend to dominate the "
+            "time-series trend. Recommend re-running with "
+            "degradation_year_on_year(multi_yoy=False)."
+        )
+    else:
+        multi_yoy = False
+
+
+    # loop through results in a daily timeindex from min(results.dt_left) to max(results.dt_right), 
+    # apply rolling median and bootstrap confidence intervals
+
+    timeindex = pd.date_range(start=results['dt_left'].min(), end=results['dt_right'].max(), freq='D')
+    results_median = pd.Series(index=timeindex, dtype=float)
+    for win_center in timeindex:
+        results_median.loc[win_center] = _roll_median(results, win_right=win_center + pd.Timedelta(days=rolling_days/2), 
+                                                    rolling_days=rolling_days, min_periods=rolling_days//4)
+        
+        
+    # use the _boostrap function to calculate confidence intervals for each point in the rolling median. 
+    # Note that the bootstrap function is not ideal for this purpose since it is 
+    # designed to take in a 1D array of values, but we can apply it to the yoy values in the 
+    # rolling window for each point in the timeindex.
+    if include_ci:
+        # if multi_yoy is True, downsample the timeindex to every 7 days to speed up the bootstrap calculation, 
+        # since it is very slow.  Otherwise downsample to every 2 days.
+        if multi_yoy:
+            timeindex = timeindex[::7]
+        else:
+            timeindex = timeindex[::2]
+        ci_lower = pd.Series(index=timeindex, dtype=float)
+        ci_upper = pd.Series(index=timeindex, dtype=float)
+        for win_center in timeindex:
+            win_right = win_center + pd.Timedelta(days=rolling_days/2)
+            win_left = win_center - pd.Timedelta(days=rolling_days/2)
+            in_window = (results['dt_left'] <= win_right) & (results['dt_right'] >= win_left)
+            if in_window.sum() < rolling_days//4:
+                ci_lower.loc[win_center] = np.nan
+                ci_upper.loc[win_center] = np.nan
+            else:
+                ci_lower.loc[win_center] = _bootstrap(results.loc[in_window, 'yoy'], percentile=2.5, reps=50)
+                ci_upper.loc[win_center] = _bootstrap(results.loc[in_window, 'yoy'], percentile=97.5, reps=50)
+
+
+    if fig is None:
+        fig, ax = plt.subplots()
+    else:
+        ax = fig.axes[0]
+    if include_ci:
+        ax.fill_between(ci_lower.index,
+                        ci_lower, ci_upper, color=ci_color)
+    median = results_median.sort_index()
+    ax.plot(median.index,
+            median, color=plot_color, **kwargs)
+    ax.axhline(results_median.median(), c='k', ls='--')
+    plt.ylabel('Degradation trend (%/yr)')
+    fig.autofmt_xdate()
+
+    return fig
