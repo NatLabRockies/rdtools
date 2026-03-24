@@ -209,8 +209,6 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         If `uncertainty_method` is 'circular_block', `block_length`
         determines the length of the blocks used in the circular block bootstrapping
         in number of days. Must be shorter than a third of the time series.
-    label    : {'right', 'center', 'left'}, default 'right'
-        Which Year-on-Year slope edge to label.
     multi_yoy : bool, default False
         Whether to return the standard Year-on-Year slopes where each slope
         is calculated over points separated by 365 days (default) or
@@ -226,8 +224,8 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         degradation rate estimate
     calc_info : dict
 
-        * `YoY_values` - pandas series of year on year slopes, either right
-           left or center labeled, depending on the `label` parameter.
+        * `YoY_values` - pandas series of year on year slopes, right
+           labeled.
         * `renormalizing_factor` - float of value used to recenter data
         * `exceedance_level` - the degradation rate that was outperformed with
           probability of `exceedance_prob`
@@ -241,10 +239,6 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     energy_normalized = energy_normalized.sort_index()
     energy_normalized.name = 'energy'
     energy_normalized.index.name = 'dt'
-
-    if label not in {"right", "left", "center"}:
-        raise ValueError(f"Unsupported value {label} for `label`."
-                         " Must be 'right', 'left' or 'center'.")
 
     # Detect less than 2 years of data. This is complicated by two things:
     #   - leap days muddle the precise meaning of "two years of data".
@@ -332,11 +326,11 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     YoY_times = YoY_times[['dt', 'dt_center', 'dt_left']]
     YoY_times = YoY_times.rename(columns={'dt': 'dt_right'})
 
-    YoY_times.set_index(YoY_times[f'dt_{label}'], inplace=True)
+    YoY_times.set_index(YoY_times['dt'], inplace=True)
     YoY_times.index.name = 'dt'
 
     # now apply either right, left, or center label index to the yoy_result
-    yoy_result.index = YoY_times[f'dt_{label}']
+    yoy_result.index = YoY_times['dt']
     yoy_result.index.name = 'dt'
 
     # the following is throwing a futurewarning if infer_objects() isn't included here.
