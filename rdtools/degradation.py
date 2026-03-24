@@ -326,11 +326,8 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     YoY_times = YoY_times[['dt', 'dt_center', 'dt_left']]
     YoY_times = YoY_times.rename(columns={'dt': 'dt_right'})
 
-    YoY_times.set_index(YoY_times['dt'], inplace=True)
-    YoY_times.index.name = 'dt'
-
-    # now apply either right, left, or center label index to the yoy_result
-    yoy_result.index = YoY_times['dt']
+    # now apply right label index to the yoy_result
+    yoy_result.index = YoY_times.index
     yoy_result.index.name = 'dt'
 
     # the following is throwing a futurewarning if infer_objects() isn't included here.
