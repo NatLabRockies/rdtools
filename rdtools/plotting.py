@@ -536,6 +536,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     yoy_info : dict
         a dictionary with keys:
         * YoY_values - pandas series of year on year slopes
+        * YoY_times - pandas series of corresponding timestamps
     rolling_days: int, default 365
         Number of days for rolling window. Note that
         the window must contain at least 25% of datapoints to be included in
@@ -571,17 +572,17 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     def _roll_median(df, win_right, rolling_days, min_periods):
         """
         rolling median
-        df includes following columns: dt_right, dt_left, yoy
+        df includes following columns: dt_center, yoy
         win_right: Datetime of the right end of the rolling window
         rolling_days: number of days in the rolling window
         min_periods: minimum number of points in the rolling window to return a value
 
-        returns: median of yoy values if any part of the slope is in the rolling window,
+        returns: median of yoy values if the center of the slope is in the rolling window,
             or NaN if there are fewer than min_periods points. Time index of the returned
             value is centered on the rolling window.
         """
         win_left = win_right - pd.Timedelta(days=rolling_days)
-        in_window = (df['dt_left'] <= win_right) & (df['dt_right'] >= win_left)
+        in_window = (df['dt_center'] <= win_right) & (df['dt_center'] >= win_left)
         if in_window.sum() < min_periods:
             return np.nan
         else:
@@ -612,7 +613,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     else:
         multi_yoy = False
 
-    # loop through results in a daily timeindex from min(results.dt_left) to max(dt_right)
+    # loop through results in a daily timeindex from min(dt_left) to max(dt_right)
     # Apply rolling median and bootstrap confidence intervals
 
     timeindex = pd.date_range(start=results['dt_left'].min(),
@@ -638,7 +639,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         for win_center in timeindex:
             win_right = win_center + pd.Timedelta(days=rolling_days/2)
             win_left = win_center - pd.Timedelta(days=rolling_days/2)
-            in_window = (results['dt_left'] <= win_right) & (results['dt_right'] >= win_left)
+            in_window = (results['dt_center'] <= win_right) & (results['dt_center'] >= win_left)
             if in_window.sum() < rolling_days//4:
                 ci_lower.loc[win_center] = np.nan
                 ci_upper.loc[win_center] = np.nan
