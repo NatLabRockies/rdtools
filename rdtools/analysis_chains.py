@@ -1001,7 +1001,7 @@ class TrendAnalysis:
         )
 
     def sensor_analysis(
-        self, analyses=["yoy_degradation"], yoy_kwargs={"label": "right"}, srr_kwargs={}
+        self, analyses=["yoy_degradation"], yoy_kwargs={}, srr_kwargs={}
     ):
         """
         Perform entire sensor-based analysis workflow.
@@ -1014,7 +1014,6 @@ class TrendAnalysis:
             and 'srr_soiling'
         yoy_kwargs : dict
             kwargs to pass to :py:func:`rdtools.degradation.degradation_year_on_year`
-            default is {"label": "right"}, which will right-label the YoY slope values.
         srr_kwargs : dict
             kwargs to pass to :py:func:`rdtools.soiling.soiling_srr`
 
@@ -1042,7 +1041,7 @@ class TrendAnalysis:
         self.results["sensor"] = sensor_results
 
     def clearsky_analysis(
-        self, analyses=["yoy_degradation"], yoy_kwargs={"label": "right"}, srr_kwargs={}
+        self, analyses=["yoy_degradation"], yoy_kwargs={}, srr_kwargs={}
     ):
         """
         Perform entire clear-sky-based analysis workflow. Results are stored
@@ -1055,7 +1054,6 @@ class TrendAnalysis:
             and 'srr_soiling'
         yoy_kwargs : dict
             kwargs to pass to :py:func:`rdtools.degradation.degradation_year_on_year`.
-            default is {"label": "right"}, which will right-label the YoY slope values.
         srr_kwargs : dict
             kwargs to pass to :py:func:`rdtools.soiling.soiling_srr`
 
