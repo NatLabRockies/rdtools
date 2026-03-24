@@ -588,7 +588,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
             return df.loc[in_window, 'yoy'].median()
 
     try:
-        results = yoy_info['YoY_times'].join(yoy_info['YoY_values'])
+        results = yoy_info['YoY_times'].join(yoy_info['YoY_values'].rename('yoy'))
     except KeyError:
         raise KeyError("yoy_info input dictionary does not contain keys"
                        " `YoY_times` and `YoY_values`.")

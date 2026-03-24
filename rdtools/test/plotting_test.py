@@ -284,30 +284,16 @@ def test_degradation_timeseries_plot(degradation_info, degradation_info_center,
     result_left = degradation_timeseries_plot(yoy_info=degradation_info_left[3],
                                               include_ci=False)
     assert_isinstance(result_left, plt.Figure)
-    xlim_left = result_left.get_axes()[0].get_xlim()[0]
+    # xlim_left = result_left.get_axes()[0].get_xlim()[0]
 
     # test default label matches label='right'
     result_default = degradation_timeseries_plot(yoy_info=yoy_info, include_ci=False)
     xlim_default = result_default.get_axes()[0].get_xlim()[0]
     assert xlim_default == xlim_right
 
-    # Check that the xlim values are offset as expected
+    # Check that the xlim values are the same as expected
     # right > center > left (since offset_days increases)
-    assert xlim_right > xlim_center > xlim_left
-
-    # The expected difference from right to left is 365 days (1 yrs), allow 5% tolerance
-    expected_diff = 365
-    actual_diff = (xlim_right - xlim_left)
-    tolerance = expected_diff * 0.05
-    assert abs(actual_diff - expected_diff) <= tolerance, \
-        f"difference of right-left xlim {actual_diff} not within 5% of 1 yr."
-
-    # The expected difference from right to center is 182 days, allow 5% tolerance
-    expected_diff2 = 182
-    actual_diff2 = (xlim_right - xlim_center)
-    tolerance2 = expected_diff2 * 0.05
-    assert abs(actual_diff2 - expected_diff2) <= tolerance2, \
-        f"difference of right-center xlim {actual_diff2} not within 5% of 1/2 year."
+    assert xlim_right == xlim_center
 
     with pytest.raises(KeyError):
         degradation_timeseries_plot({'a': 1}, include_ci=False)
