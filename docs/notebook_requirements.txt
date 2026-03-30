@@ -39,7 +39,7 @@ prometheus-client==0.20.0
 prompt-toolkit==3.0.47
 ptyprocess==0.7.0
 pycparser==2.22
-Pygments==2.18.0
+Pygments==2.20.0
 pyzmq==26.1.1
 qtconsole==5.5.2
 Send2Trash==1.8.3
