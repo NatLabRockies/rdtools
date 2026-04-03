@@ -510,21 +510,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         plot_color = 'tab:orange'
     if ci_color is None:
         ci_color = 'C0'
-    """
-    if yoy_info['YoY_values'].index.has_duplicates:
-        multi_yoy = True
-        # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
-        warnings.warn(
-            "Input `yoy_info['YoY_values']` appears to have multiple annual "
-            "slopes per day, which is the case if "
-            "degradation_year_on_year(multi_yoy=True). "
-            "Long-term multi-yoy slopes will tend to dominate the "
-            "time-series trend. Recommend re-running with "
-            "degradation_year_on_year(multi_yoy=False)."
-        )
-    else:
-        multi_yoy = False
-    """
+
     # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
     results = results[(results['dt_right'] - results['dt_left']) <= pd.Timedelta(days=365 * 2 + 1)]
 
