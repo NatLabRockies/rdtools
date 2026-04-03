@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 import plotly
 import pytest
-import warnings
 import re
 import copy
 

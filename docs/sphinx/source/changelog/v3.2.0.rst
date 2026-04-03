@@ -4,24 +4,24 @@ v3.2.0 (X, X, 2026)
 
 Enhancements
 ------------
-* :py:func:`~rdtools.plotting.degradation_timeseries_plot` refactored to do a rolling
-  median, for all slopes whose center timestamp is inside the window.
-  ``min_periods`` reduced to ``rolling_days//4``.
-  (:issue:`455`) (:pull:`498`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``multi_yoy``
   (default False) to trigger multiple YoY degradation calculations similar to Hugo Quest et
   al 2023. In this mode, instead of a series of 1-year duration slopes, 2-year, 3-year etc
   slopes are also included.  calc_info['YoY_values'] returns a non-monotonic index
   in this mode due to multiple overlapping annual slopes.  (:issue:`394`)
-* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now supports ``multi_yoy=True``
-  data by resampling overlapping YoY values to their mean. A warning is issued to
-  notify that time-series sensitivity is reduced by multi_yoy.  (:issue:`394`) (:pull:`498`)
-* :py:func:`~rdtools.plotting.degradation_summary_plots` ``detailed=True`` mode now
-  properly handles points used odd vs even number of times (not just 0, 1, 2).
-  (:issue:`394`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
   ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
   columns for each YoY slope.  (:issue:`459`)
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now supports ``multi_yoy=True``
+  data. To avoid over-filtering, only slopes on the order of 2 years (731 days) or
+  shorter are included in the center-labeled median.  (:issue:`394`) (:pull:`498`)
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` refactored to do a rolling
+  median, for all slopes whose center timestamp is inside the window.
+  ``min_periods`` reduced to ``rolling_days//4``.
+  (:issue:`455`) (:pull:`498`)  
+* :py:func:`~rdtools.plotting.degradation_summary_plots` ``detailed=True`` mode now
+  properly handles points used odd vs even number of times (not just 0, 1, 2).
+  (:issue:`394`)
 * Added new example notebook ``docs/Multi-year_on_year_example.ipynb`` demonstrating the
   ``multi_yoy=True`` features of
   :py:func:`~rdtools.degradation.degradation_year_on_year`.  (:issue:`394`)
