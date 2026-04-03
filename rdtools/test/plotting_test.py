@@ -268,12 +268,7 @@ def test_degradation_timeseries_plot(degradation_info):
     new_val = yoy_multi['YoY_values'].iloc[100]
     yoy_values_multi = pd.concat([yoy_multi['YoY_values'], pd.Series([new_val], index=[new_idx])])
     yoy_multi['YoY_values'] = yoy_values_multi
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter('always')
-        result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False)
-        assert_isinstance(result, plt.Figure)
-        assert len(w) > 0, "Expected at least one warning to be raised"
-        assert any(issubclass(warn.category, UserWarning) for warn in w), \
-            "Expected a UserWarning to be raised for multi-YoY values"
+    result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False)
+    assert_isinstance(result, plt.Figure)
 
     plt.close('all')

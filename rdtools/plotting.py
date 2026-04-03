@@ -466,6 +466,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     It should be noted that ``yoy_info`` is an output
     from :py:func:`rdtools.degradation.degradation_year_on_year`.
 
+    Also, if a multi-YoY analysis is passed in, only slopes of length <=
+    731 days are considered in this time-series plot to avoid over-smoothing
+
     Returns
     -------
     matplotlib.figure.Figure
@@ -507,7 +510,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         plot_color = 'tab:orange'
     if ci_color is None:
         ci_color = 'C0'
-
+    """
     if yoy_info['YoY_values'].index.has_duplicates:
         multi_yoy = True
         # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
@@ -521,6 +524,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         )
     else:
         multi_yoy = False
+    """
+    # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
+    results = results[(results['dt_right'] - results['dt_left']) <= pd.Timedelta(days=365 * 2 + 1)]
 
     # loop through results in a daily timeindex from min(dt_left) to max(dt_right)
     # Apply rolling median and bootstrap confidence intervals
@@ -537,12 +543,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
 
     # calculate confidence intervals for each point in the rolling median.
     if include_ci:
-        # if multi_yoy is True, downsample the timeindex to every 7 days to speed up the
-        # bootstrap calculation, since it is slow.  Otherwise downsample to every 2 days.
-        if multi_yoy:
-            timeindex = timeindex[::7]
-        else:
-            timeindex = timeindex[::2]
+        # downsample the timeindex to every 2 days to speed up the bootstrap calculation,
+        # since it is very slow.
+        timeindex = timeindex[::2]
         ci_lower = pd.Series(index=timeindex, dtype=float)
         ci_upper = pd.Series(index=timeindex, dtype=float)
         for win_center in timeindex:
