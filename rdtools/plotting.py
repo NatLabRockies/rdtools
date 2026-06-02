@@ -436,7 +436,8 @@ def availability_summary_plots(power_system, power_subsystem, loss_total,
 
 
 def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
-                                fig=None, plot_color=None, ci_color=None, **kwargs):
+                                fig=None, plot_color=None, ci_color=None,
+                                center=None):
     '''
     Plot resampled time series of degradation trend with time
 
@@ -444,12 +445,14 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     ----------
     yoy_info : dict
         a dictionary with keys:
-        * YoY_values - pandas series of year on year slopes
-        * YoY_times - pandas series of corresponding timestamps
+
+        * YoY_values - pandas series of right-labeled year on year slopes
+        * YoY_times - dict containing a ``dt_center`` key with a
+          pandas DatetimeIndex of center timestamps for each YoY
+          window (required when ``center=True``)
     rolling_days: int, default 365
-        Number of days for rolling window. Note that
-        the window must contain at least 25% of datapoints to be included in
-        the rolling plot, and the rolling window is centered.
+        Number of days for rolling window. Note that the window must contain
+        at least 50% of datapoints to be included in rolling plot.
     include_ci : bool, default True
         calculate and plot 2-sigma confidence intervals along with rolling median
     fig     : matplotlib, optional
@@ -458,6 +461,12 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         color of the timeseries trendline
     ci_color : str, optional
         color of the confidence interval 'fuzz'
+    center : bool, default False
+        If ``True``, the rolling window is centered and ``results_values`` is
+        reindexed using ``yoy_info['YoY_times']['dt_center']`` before any calculations are
+        performed.  The recommended value is ``True``; the default of ``False``
+        is retained only for backward compatibility.  A warning is raised when
+        this argument is not explicitly supplied.
     kwargs :
         Extra parameters passed to matplotlib.pyplot.axis.plot()
 
@@ -466,13 +475,20 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     It should be noted that ``yoy_info`` is an output
     from :py:func:`rdtools.degradation.degradation_year_on_year`.
 
-    Also, if a multi-YoY analysis is passed in, only slopes of length <=
-    731 days are considered in this time-series plot to avoid over-smoothing
-
     Returns
     -------
     matplotlib.figure.Figure
     '''
+
+    if center is None:
+        warnings.warn(
+            "The default value of 'center' will remain False for backward "
+            "compatibility, but center=True is recommended. Pass "
+            "center=True to silence this warning.",
+            UserWarning,
+            stacklevel=2,
+        )
+        center = False
 
     def _bootstrap(x, percentile, reps):
         # stolen from degradation_year_on_year
@@ -481,83 +497,49 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         mb1 = np.nanmedian(xb1, axis=0)
         return np.percentile(mb1, percentile)
 
-    def _roll_median(df, win_right, rolling_days, min_periods):
-        """
-        rolling median
-        df includes following columns: dt_center, yoy
-        win_right: Datetime of the right end of the rolling window
-        rolling_days: number of days in the rolling window
-        min_periods: minimum number of points in the rolling window to return a value
-
-        returns: median of yoy values if the center of the slope is in the rolling window,
-            or NaN if there are fewer than min_periods points. Time index of the returned
-            value is centered on the rolling window.
-        """
-        win_left = win_right - pd.Timedelta(days=rolling_days)
-        in_window = (df['dt_center'] <= win_right) & (df['dt_center'] >= win_left)
-        if in_window.sum() < min_periods:
-            return np.nan
-        else:
-            return df.loc[in_window, 'yoy'].median()
-
     try:
-        results = yoy_info['YoY_times'].join(yoy_info['YoY_values'].rename('yoy'))
+        results_values = yoy_info['YoY_values']
+
     except KeyError:
-        raise KeyError("yoy_info input dictionary does not contain keys"
-                       " `YoY_times` and `YoY_values`.")
+        raise KeyError("yoy_info input dictionary does not contain key `YoY_values`.")
+
+    if center:
+        try:
+            results_values = results_values.copy()
+            results_values.index = yoy_info['YoY_times']['dt_center']
+        except KeyError:
+            raise KeyError("yoy_info input dictionary does not contain key `YoY_times['dt_center']`, "
+                           "which is required when center=True.")
+
+    results_values = results_values.sort_index()
+    # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
+    yoy_durations = yoy_info['YoY_times']['dt_right'] - yoy_info['YoY_times']['dt_left']
+    results_values = results_values[yoy_durations <= pd.Timedelta(days=365 * 2 + 1)]
 
     if plot_color is None:
         plot_color = 'tab:orange'
     if ci_color is None:
         ci_color = 'C0'
 
-    # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
-    results = results[(results['dt_right'] - results['dt_left']) <= pd.Timedelta(days=365 * 2 + 1)]
-
-    # loop through results in a daily timeindex from min(dt_left) to max(dt_right)
-    # Apply rolling median and bootstrap confidence intervals
-
-    timeindex = pd.date_range(start=results['dt_left'].min(),
-                              end=results['dt_right'].max(), freq='D')
-    results_median = pd.Series(index=timeindex, dtype=float)
-    for win_center in timeindex:
-        win_right = win_center + pd.Timedelta(days=rolling_days/2)
-        results_median.loc[win_center] = _roll_median(df=results,
-                                                      win_right=win_right,
-                                                      rolling_days=rolling_days,
-                                                      min_periods=rolling_days//4)
-
-    # calculate confidence intervals for each point in the rolling median.
+    roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//2,
+                                    center=center)
+    # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
+    # TODO: figure out some workaround to return both percentiles in a single pass
     if include_ci:
-        # downsample the timeindex to every 2 days to speed up the bootstrap calculation,
-        # since it is very slow.
-        timeindex = timeindex[::2]
-        ci_lower = pd.Series(index=timeindex, dtype=float)
-        ci_upper = pd.Series(index=timeindex, dtype=float)
-        for win_center in timeindex:
-            win_right = win_center + pd.Timedelta(days=rolling_days/2)
-            win_left = win_center - pd.Timedelta(days=rolling_days/2)
-            in_window = (results['dt_center'] <= win_right) & (results['dt_center'] >= win_left)
-            if in_window.sum() < rolling_days//4:
-                ci_lower.loc[win_center] = np.nan
-                ci_upper.loc[win_center] = np.nan
-            else:
-                ci_lower.loc[win_center] = _bootstrap(results.loc[in_window, 'yoy'],
-                                                      percentile=2.5, reps=50)
-                ci_upper.loc[win_center] = _bootstrap(results.loc[in_window, 'yoy'],
-                                                      percentile=97.5, reps=50)
-
+        ci_lower = roller.apply(_bootstrap, kwargs={'percentile': 2.5, 'reps': 100}, raw=True)
+        ci_upper = roller.apply(_bootstrap, kwargs={'percentile': 97.5, 'reps': 100}, raw=True)
+        ci_lower = ci_lower[~ci_lower.index.duplicated(keep='last')]
+        ci_upper = ci_upper[~ci_upper.index.duplicated(keep='last')]
+    rolling_median = roller.median()
+    rolling_median = rolling_median[~rolling_median.index.duplicated(keep='last')]
     if fig is None:
         fig, ax = plt.subplots()
     else:
         ax = fig.axes[0]
     if include_ci:
-        ax.fill_between(ci_lower.index,
-                        ci_lower, ci_upper, color=ci_color)
-    median = results_median.sort_index()
-    ax.plot(median.index,
-            median, color=plot_color, **kwargs)
-    ax.axhline(results_median.median(), c='k', ls='--')
+        ax.fill_between(ci_lower.index, ci_lower, ci_upper, color=ci_color)
+    ax.plot(rolling_median, color=plot_color, **kwargs)
+    ax.axhline(results_values.median(), c='k', ls='--')
     plt.ylabel('Degradation trend (%/yr)')
     fig.autofmt_xdate()
 
