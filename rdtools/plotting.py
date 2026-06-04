@@ -437,7 +437,7 @@ def availability_summary_plots(power_system, power_subsystem, loss_total,
 
 def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
                                 fig=None, plot_color=None, ci_color=None,
-                                center=None):
+                                center=None, **kwargs):
     '''
     Plot resampled time series of degradation trend with time
 
@@ -498,30 +498,35 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         return np.percentile(mb1, percentile)
 
     try:
-        results_values = yoy_info['YoY_values']
+        results_values = yoy_info['YoY_values'].copy()
 
     except KeyError:
         raise KeyError("yoy_info input dictionary does not contain key `YoY_values`.")
 
+    # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
+    # (applied before index reassignment while integer index still aligns with YoY_times)
+    yoy_durations = yoy_info['YoY_times']['dt_right'] - yoy_info['YoY_times']['dt_left']
+    results_values = results_values[
+        results_values.index.map(yoy_durations) <= pd.Timedelta(days=365 * 2 + 1)
+    ]
+
     if center:
         try:
-            results_values = results_values.copy()
-            results_values.index = yoy_info['YoY_times']['dt_center']
+            results_values.index = results_values.index.map(yoy_info['YoY_times']['dt_center'])
         except KeyError:
             raise KeyError("yoy_info input dictionary does not contain key `YoY_times['dt_center']`, "
                            "which is required when center=True.")
+    else:
+        results_values.index = results_values.index.map(yoy_info['YoY_times']['dt_right'])
 
     results_values = results_values.sort_index()
-    # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
-    yoy_durations = yoy_info['YoY_times']['dt_right'] - yoy_info['YoY_times']['dt_left']
-    results_values = results_values[yoy_durations <= pd.Timedelta(days=365 * 2 + 1)]
 
     if plot_color is None:
         plot_color = 'tab:orange'
     if ci_color is None:
         ci_color = 'C0'
 
-    roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//2,
+    roller = results_values.rolling(f'{rolling_days}D', min_periods=rolling_days//2,
                                     center=center)
     # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
     # TODO: figure out some workaround to return both percentiles in a single pass
