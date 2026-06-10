@@ -13,7 +13,8 @@ jobs:
           'TrendAnalysis_example.ipynb',
           'TrendAnalysis_example_NSRDB.ipynb',
           'degradation_and_soiling_example.ipynb',
-          'system_availability_example.ipynb'
+          'system_availability_example.ipynb',
+          'Multi-year_on_year_example.ipynb'
         ]
 
     steps:
