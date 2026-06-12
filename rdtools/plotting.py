@@ -446,13 +446,13 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     yoy_info : dict
         a dictionary with keys:
 
-        * YoY_values - pandas series of right-labeled year on year slopes
-        * YoY_times - dict containing a ``dt_center`` key with a
-          pandas DatetimeIndex of center timestamps for each YoY
-          window (required when ``center=True``)
+        * YoY_values - pandas series of year on year slopes with integer index.
+        * YoY_times - dict containing a ``dt_left``, ``dt_center`` and ``dt_right`` key with a
+          pandas DatetimeIndex of left, center and right-labeled timestamps for each YoY
+          window.
     rolling_days: int, default 365
         Number of days for rolling window. Note that the window must contain
-        at least 50% of datapoints to be included in rolling plot.
+        at least 25% of datapoints to be included in rolling plot.
     include_ci : bool, default True
         calculate and plot 2-sigma confidence intervals along with rolling median
     fig     : matplotlib, optional
@@ -526,10 +526,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     if ci_color is None:
         ci_color = 'C0'
 
-    roller = results_values.rolling(f'{rolling_days}D', min_periods=rolling_days//2,
+    roller = results_values.rolling(f'{rolling_days}D', min_periods=rolling_days//4,
                                     center=center)
-    # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
-    # TODO: figure out some workaround to return both percentiles in a single pass
+
     if include_ci:
         ci_lower = roller.apply(_bootstrap, kwargs={'percentile': 2.5, 'reps': 100}, raw=True)
         ci_upper = roller.apply(_bootstrap, kwargs={'percentile': 97.5, 'reps': 100}, raw=True)
