@@ -180,7 +180,7 @@ def degradation_classical_decomposition(energy_normalized,
 def degradation_year_on_year(energy_normalized, recenter=True,
                              exceedance_prob=95, confidence_level=68.2,
                              uncertainty_method='simple', block_length=30,
-                             label='right', multi_yoy=False):
+                             multi_yoy=False):
     '''
     Estimate the trend of a timeseries using the year-on-year decomposition
     approach and calculate a Monte Carlo-derived confidence interval of slope.
@@ -224,8 +224,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         degradation rate estimate
     calc_info : dict
 
-        * `YoY_values` - pandas series of year on year slopes, right
-           labeled.
+        * `YoY_values` - pandas series of year on year slopes with integer index.
         * `renormalizing_factor` - float of value used to recenter data
         * `exceedance_level` - the degradation rate that was outperformed with
           probability of `exceedance_prob`
@@ -326,7 +325,7 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     YoY_times = YoY_times[['dt', 'dt_center', 'dt_left']]
     YoY_times = YoY_times.rename(columns={'dt': 'dt_right'})
 
-    # now apply right label index to the yoy_result
+    # apply integer index to the yoy_result; multi-YoY has duplicate timestamps.
     yoy_result.index = YoY_times.index
     yoy_result.index.name = 'dt'
 

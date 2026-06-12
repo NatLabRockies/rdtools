@@ -447,9 +447,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         a dictionary with keys:
 
         * YoY_values - pandas series of year on year slopes with integer index.
-        * YoY_times - dict containing a ``dt_left``, ``dt_center`` and ``dt_right`` key with a
-          pandas DatetimeIndex of left, center and right-labeled timestamps for each YoY
-          window.
+        * YoY_times - pandas DataFrame containing a ``dt_left``, ``dt_center``
+           and ``dt_right`` timestamp columns, indexed by the same integer window
+           id as ``YoY_values``.
     rolling_days: int, default 365
         Number of days for rolling window. Note that the window must contain
         at least 25% of datapoints to be included in rolling plot.
@@ -514,7 +514,7 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         try:
             results_values.index = results_values.index.map(yoy_info['YoY_times']['dt_center'])
         except KeyError:
-            raise KeyError("yoy_info input dictionary does not contain key `YoY_times['dt_center']`, "
+            raise KeyError("yoy_info input dict doesn't contain key `YoY_times['dt_center']`, "
                            "which is required when center=True.")
     else:
         results_values.index = results_values.index.map(yoy_info['YoY_times']['dt_right'])
