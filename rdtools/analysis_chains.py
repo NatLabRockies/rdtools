@@ -1248,7 +1248,7 @@ class TrendAnalysis:
         ax.set_ylabel("PV Energy (Wh/timestep)")
         return fig
 
-    def plot_degradation_timeseries(self, case, rolling_days=365, **kwargs):
+    def plot_degradation_timeseries(self, case, rolling_days=365, center=None, **kwargs):
         """
         Plot resampled time series of degradation trend with time
 
@@ -1259,6 +1259,12 @@ class TrendAnalysis:
         rolling_days: int, default 365
             Number of days for rolling window. Note that the window must contain
             at least 50% of datapoints to be included in rolling plot.
+        center : bool, default False
+            If ``True``, the rolling window is centered and results are reindexed
+            using center timestamps before any calculations are performed.
+            The recommended value is ``True``; the default of ``False`` is retained
+            only for backward compatibility. A warning is raised when this argument
+            is not explicitly supplied.
         kwargs :
             Extra parameters passed to :py:func:`rdtools.plotting.degradation_timeseries_plot`
 
@@ -1274,7 +1280,7 @@ class TrendAnalysis:
         else:
             raise ValueError("case must be either 'sensor' or 'clearsky'")
 
-        fig = plotting.degradation_timeseries_plot(yoy_info, rolling_days, **kwargs)
+        fig = plotting.degradation_timeseries_plot(yoy_info, rolling_days, center=center, **kwargs)
         return fig
 
 
