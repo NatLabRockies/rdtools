@@ -1257,8 +1257,11 @@ class TrendAnalysis:
         case: str
             The workflow result to plot, allowed values are 'sensor' and 'clearsky'
         rolling_days: int, default 365
-            Number of days for rolling window. Note that the window must contain
-            at least 50% of datapoints to be included in rolling plot.
+            Number of days for rolling window. The window must contain at least
+            ``rolling_days // min_periods_divisor`` datapoints to be included in
+            the rolling plot; see
+            :py:func:`rdtools.plotting.degradation_timeseries_plot` for details
+            on ``min_periods_divisor`` and its pending default change.
         center : bool, default False
             If ``True``, the rolling window is centered and results are reindexed
             using center timestamps before any calculations are performed.

@@ -437,7 +437,7 @@ def availability_summary_plots(power_system, power_subsystem, loss_total,
 
 def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
                                 fig=None, plot_color=None, ci_color=None,
-                                center=None, **kwargs):
+                                center=None, min_periods_divisor=None, **kwargs):
     '''
     Plot resampled time series of degradation trend with time
 
@@ -451,8 +451,9 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
            and ``dt_right`` timestamp columns, indexed by the same integer window
            id as ``YoY_values``.
     rolling_days: int, default 365
-        Number of days for rolling window. Note that the window must contain
-        at least 25% of datapoints to be included in rolling plot.
+        Number of days for rolling window. The window must contain at least
+        ``rolling_days // min_periods_divisor`` datapoints to be included in
+        the rolling plot.
     include_ci : bool, default True
         calculate and plot 2-sigma confidence intervals along with rolling median
     fig     : matplotlib, optional
@@ -467,6 +468,15 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         performed.  The recommended value is ``True``; the default of ``False``
         is retained only for backward compatibility.  A warning is raised when
         this argument is not explicitly supplied.
+    min_periods_divisor : int, optional
+        Divisor applied to ``rolling_days`` to set the minimum number of
+        observations required in a window. Smaller values (e.g. 2) require
+        the window to be more populated; larger values (e.g. 4) make the
+        plot more resilient to small data outages without losing fidelity.
+        Defaults to 2 in this release to match the behavior in rdtools
+        prior to the multi-YoY changes. A ``FutureWarning`` is emitted when
+        the default is used; the default will change to 4 in a future major
+        release. Pass an explicit value to silence the warning.
     kwargs :
         Extra parameters passed to matplotlib.pyplot.axis.plot()
 
@@ -489,6 +499,17 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
             stacklevel=2,
         )
         center = False
+
+    if min_periods_divisor is None:
+        warnings.warn(
+            "The default `min_periods_divisor=2` will change to 4 in a future "
+            "major release of rdtools, which makes the rolling plot more "
+            "resilient to small data outages. Pass `min_periods_divisor` "
+            "explicitly to silence this warning.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        min_periods_divisor = 2
 
     def _bootstrap(x, percentile, reps):
         # stolen from degradation_year_on_year
@@ -526,7 +547,8 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     if ci_color is None:
         ci_color = 'C0'
 
-    roller = results_values.rolling(f'{rolling_days}D', min_periods=rolling_days//4,
+    roller = results_values.rolling(f'{rolling_days}D',
+                                    min_periods=rolling_days // min_periods_divisor,
                                     center=center)
 
     if include_ci:

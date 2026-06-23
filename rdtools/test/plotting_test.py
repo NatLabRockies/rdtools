@@ -254,7 +254,8 @@ def test_degradation_timeseries_plot(degradation_info):
     import warnings
     power, yoy_rd, yoy_ci, yoy_info = degradation_info
 
-    # test defaults which should include a warning if center=False is not passed.
+    # test defaults; expect both the UserWarning (center) and the
+    # FutureWarning (min_periods_divisor) to be raised when neither is passed.
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter('always')
         result_right = degradation_timeseries_plot(yoy_info)
@@ -263,9 +264,13 @@ def test_degradation_timeseries_plot(degradation_info):
         assert len(w) > 0, "Expected at least one warning to be raised"
         assert any(issubclass(warn.category, UserWarning) for warn in w), \
             "Expected a UserWarning to be raised for multi-YoY values"
+        assert any(issubclass(warn.category, FutureWarning)
+                   and "min_periods_divisor" in str(warn.message) for warn in w), \
+            "Expected a FutureWarning about min_periods_divisor default"
 
     with pytest.raises(KeyError):
-        degradation_timeseries_plot({'a': 1}, include_ci=False, center=False)
+        degradation_timeseries_plot({'a': 1}, include_ci=False, center=False,
+                                    min_periods_divisor=2)
 
     # Add multi-YoY test by duplication idx=100.
     yoy_multi = copy.deepcopy(yoy_info)
@@ -273,9 +278,15 @@ def test_degradation_timeseries_plot(degradation_info):
     new_val = yoy_multi['YoY_values'].iloc[100]
     yoy_values_multi = pd.concat([yoy_multi['YoY_values'], pd.Series([new_val], index=[new_idx])])
     yoy_multi['YoY_values'] = yoy_values_multi
-    result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False, center=True)
+    result = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False,
+                                         center=True, min_periods_divisor=2)
     centerax = result.get_axes()[0].get_xlim()[0]
     assert_isinstance(result, plt.Figure)
     assert centerax < rightax, "Expected center-labeled plot to be left of right-labeled plot"
+
+    # explicit min_periods_divisor=4 (the planned future default) also works
+    result4 = degradation_timeseries_plot(yoy_info=yoy_multi, include_ci=False,
+                                          center=True, min_periods_divisor=4)
+    assert_isinstance(result4, plt.Figure)
 
     plt.close('all')
