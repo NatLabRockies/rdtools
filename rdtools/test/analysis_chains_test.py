@@ -134,11 +134,8 @@ def sensor_analysis_aggregated_no_filter(sensor_parameters):
 def clearsky_example_data(basic_parameters):
     # Import the example data
     file_url = (
-        "https://datahub.duramat.org/dataset/"
-        "a49bb656-7b36-437a-8089-1870a40c2a7d/"
-        "resource/d2c3fcf4-4f5f-47ad-8743-fc29"
-        "f1356835/download/pvdaq_system_4_2010"
-        "-2016_subset_soil_signal.csv"
+        "https://github.com/NatLabRockies/rdtools/releases/download/3.0.0/"
+        "pvdaq_system_4_2010-2016_subset_soil_signal.csv"
     )
     cache_file = "PVDAQ_system_4_2010-2016_subset_soilsignal.pickle"
 

@@ -202,35 +202,6 @@ class DegradationTestCase(unittest.TestCase):
             self.test_corr_energy[input_freq])
         self.assertTrue((np.sum(rd_result[2]['usage_of_points'])) == 1462)
 
-    def test_degradation_year_on_year_label_center(self):
-        ''' Test degradation_year_on_year with label="center". '''
-
-        funcName = sys._getframe().f_code.co_name
-        logging.debug('Running {}'.format(funcName))
-
-        # test YOY degradation calc with label='center'
-        input_freq = 'D'
-        rd_result = degradation_year_on_year(
-            self.test_corr_energy[input_freq], label='center')
-        self.assertAlmostEqual(rd_result[0], 100 * self.rd, places=1)
-        rd_result1 = degradation_year_on_year(
-            self.test_corr_energy[input_freq])
-        rd_result2 = degradation_year_on_year(
-            self.test_corr_energy[input_freq], label='right')
-        pd.testing.assert_index_equal(rd_result1[2]['YoY_values'].index,
-                                      rd_result2[2]['YoY_values'].index)
-        # 365/2 days difference between center and right label
-        assert (rd_result2[2]['YoY_values'].index -
-                rd_result[2]['YoY_values'].index).mean().days == \
-            pytest.approx(183, abs=1)
-
-        with pytest.raises(ValueError):
-            degradation_year_on_year(self.test_corr_energy[input_freq],
-                                     label='LEFT')
-        with pytest.raises(ValueError):
-            degradation_year_on_year(self.test_corr_energy[input_freq],
-                                     label=None)
-
     def test_avg_timestamp_old_Pandas(self):
         """Test the _avg_timestamp_old_Pandas function for correct averaging."""
         from rdtools.degradation import _avg_timestamp_old_Pandas

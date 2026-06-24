@@ -4,39 +4,40 @@ v3.2.0 (X, X, 2026)
 
 Enhancements
 ------------
-* :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``label=``
-  to return the calc_info['YoY_values'] as either right labeled (default), left or
-  center labeled. (:issue:`459`)
-* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now defaults to rolling
-  median, centered on the timestamp (pd.rolling(center=True)), and reduces
-  ``min_periods`` from ``rolling_days//2`` to ``rolling_days//4``.
-  (:issue:`455`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``multi_yoy``
   (default False) to trigger multiple YoY degradation calculations similar to Hugo Quest et
   al 2023. In this mode, instead of a series of 1-year duration slopes, 2-year, 3-year etc
   slopes are also included.  calc_info['YoY_values'] returns a non-monotonic index
   in this mode due to multiple overlapping annual slopes.  (:issue:`394`)
-* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now supports ``multi_yoy=True``
-  data by resampling overlapping YoY values to their mean. A warning is issued when this
-  resampling occurs.  (:issue:`394`)
-* :py:func:`~rdtools.plotting.degradation_summary_plots` ``detailed=True`` mode now
-  properly handles points used odd vs even number of times (not just 0, 1, 2).
-  (:issue:`394`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
   ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
   columns for each YoY slope.  (:issue:`459`)
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` now supports ``multi_yoy=True``
+  data. To avoid over-filtering, only slopes on the order of 2 years (731 days) or
+  shorter are included in the center-labeled median.  (:issue:`394`) (:pull:`498`)
+* :py:func:`~rdtools.plotting.degradation_timeseries_plot` refactored to do a rolling
+  median, for all slopes whose center timestamp is inside the window.
+  ``min_periods`` reduced to ``rolling_days//4``.
+  (:issue:`455`) (:pull:`498`)
+* Added ``min_periods_divisor`` argument to
+  :py:func:`rdtools.plotting.degradation_timeseries_plot` to control the
+  minimum number of observations required in each rolling window
+  (``rolling_days // min_periods_divisor``). The current default of ``2``
+  is preserved, and a ``FutureWarning`` is emitted when the default is
+  used to signal that the default will change to ``4`` in a future major
+  release, making the time-series plot more resilient to small data
+  outages without losing fidelity. (:pull:`498`)
+* :py:func:`~rdtools.plotting.degradation_summary_plots` ``detailed=True`` mode now
+  properly handles points used odd vs even number of times (not just 0, 1, 2).
+  (:issue:`394`)
 * Added new example notebook ``docs/Multi-year_on_year_example.ipynb`` demonstrating the
-  ``label='center'`` and ``multi_yoy=True`` features of
+  ``multi_yoy=True`` features of
   :py:func:`~rdtools.degradation.degradation_year_on_year`.  (:issue:`394`)
-* :py:meth:`~rdtools.analysis_chains.TrendAnalysis.sensor_analysis` and
-  :py:meth:`~rdtools.analysis_chains.TrendAnalysis.clearsky_analysis` now
-  explicitly default ``yoy_kwargs={"label": "right"}``.
 
 Bug Fixes
 ---------
 * Fixed ``usage_of_points`` calculation in :py:func:`~rdtools.degradation.degradation_year_on_year`
   to properly handle ``multi_yoy=True`` mode with overlapping slopes.  (:issue:`394`)
-
 
 Maintenance
 -----------
@@ -49,6 +50,9 @@ Maintenance
   avoid related warnings/errors.
 * Removed trailing semicolons in example notebooks.
 * Added ``.coverage.*`` pattern to ``.gitignore``.
+* Updated the download URL for the ``pvdaq_system_4_2010-2016_subset_soil_signal.csv``
+  example dataset used by the notebooks and the analysis chains tests to a
+  GitHub release asset under ``NatLabRockies/rdtools``. (:pull:`513`)
 
 Testing
 -------
@@ -63,8 +67,7 @@ Testing
   decreasing).
 * Added test for ``multi_yoy=True`` parameter in ``degradation_year_on_year``.
 * Added tests for :py:func:`~rdtools.plotting.degradation_timeseries_plot`
-  covering ``label='center'``, ``label='left'``, multi-YoY duplicate index
-  handling, and ``KeyError`` path.
+  covering multi-YoY duplicate index handling, and ``KeyError`` path.
 * Set matplotlib backend to ``Agg`` in test ``conftest.py`` to avoid tkinter issues.
 
 

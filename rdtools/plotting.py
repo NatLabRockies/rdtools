@@ -436,7 +436,8 @@ def availability_summary_plots(power_system, power_subsystem, loss_total,
 
 
 def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
-                                fig=None, plot_color=None, ci_color=None, **kwargs):
+                                fig=None, plot_color=None, ci_color=None,
+                                center=None, min_periods_divisor=None, **kwargs):
     '''
     Plot resampled time series of degradation trend with time
 
@@ -444,11 +445,15 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     ----------
     yoy_info : dict
         a dictionary with keys:
-        * YoY_values - pandas series of year on year slopes
+
+        * YoY_values - pandas series of year on year slopes with integer index.
+        * YoY_times - pandas DataFrame containing a ``dt_left``, ``dt_center``
+           and ``dt_right`` timestamp columns, indexed by the same integer window
+           id as ``YoY_values``.
     rolling_days: int, default 365
-        Number of days for rolling window. Note that
-        the window must contain at least 25% of datapoints to be included in
-        the rolling plot, and the rolling window is centered.
+        Number of days for rolling window. The window must contain at least
+        ``rolling_days // min_periods_divisor`` datapoints to be included in
+        the rolling plot.
     include_ci : bool, default True
         calculate and plot 2-sigma confidence intervals along with rolling median
     fig     : matplotlib, optional
@@ -457,6 +462,21 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         color of the timeseries trendline
     ci_color : str, optional
         color of the confidence interval 'fuzz'
+    center : bool, default False
+        If ``True``, the rolling window is centered and ``results_values`` is
+        reindexed using ``yoy_info['YoY_times']['dt_center']`` before any calculations are
+        performed.  The recommended value is ``True``; the default of ``False``
+        is retained only for backward compatibility.  A warning is raised when
+        this argument is not explicitly supplied.
+    min_periods_divisor : int, optional
+        Divisor applied to ``rolling_days`` to set the minimum number of
+        observations required in a window. Smaller values (e.g. 2) require
+        the window to be more populated; larger values (e.g. 4) make the
+        plot more resilient to small data outages without losing fidelity.
+        Defaults to 2 in this release to match the behavior in rdtools
+        prior to the multi-YoY changes. A ``FutureWarning`` is emitted when
+        the default is used; the default will change to 4 in a future major
+        release. Pass an explicit value to silence the warning.
     kwargs :
         Extra parameters passed to matplotlib.pyplot.axis.plot()
 
@@ -470,6 +490,27 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
     matplotlib.figure.Figure
     '''
 
+    if center is None:
+        warnings.warn(
+            "The default value of 'center' will remain False for backward "
+            "compatibility, but center=True is recommended. Pass "
+            "center=True to silence this warning.",
+            UserWarning,
+            stacklevel=2,
+        )
+        center = False
+
+    if min_periods_divisor is None:
+        warnings.warn(
+            "The default `min_periods_divisor=2` will change to 4 in a future "
+            "major release of rdtools, which makes the rolling plot more "
+            "resilient to small data outages. Pass `min_periods_divisor` "
+            "explicitly to silence this warning.",
+            FutureWarning,
+            stacklevel=2,
+        )
+        min_periods_divisor = 2
+
     def _bootstrap(x, percentile, reps):
         # stolen from degradation_year_on_year
         n1 = len(x)
@@ -478,47 +519,52 @@ def degradation_timeseries_plot(yoy_info, rolling_days=365, include_ci=True,
         return np.percentile(mb1, percentile)
 
     try:
-        results_values = yoy_info['YoY_values']
+        results_values = yoy_info['YoY_values'].copy()
+
     except KeyError:
         raise KeyError("yoy_info input dictionary does not contain key `YoY_values`.")
+
+    # filter to only 2 years + 1 day length slopes to avoid over-smoothing in the multi-yoy case
+    # (applied before index reassignment while integer index still aligns with YoY_times)
+    yoy_durations = yoy_info['YoY_times']['dt_right'] - yoy_info['YoY_times']['dt_left']
+    results_values = results_values[
+        results_values.index.map(yoy_durations) <= pd.Timedelta(days=365 * 2 + 1)
+    ]
+
+    if center:
+        try:
+            results_values.index = results_values.index.map(yoy_info['YoY_times']['dt_center'])
+        except KeyError:
+            raise KeyError("yoy_info input dict doesn't contain key `YoY_times['dt_center']`, "
+                           "which is required when center=True.")
+    else:
+        results_values.index = results_values.index.map(yoy_info['YoY_times']['dt_right'])
+
+    results_values = results_values.sort_index()
 
     if plot_color is None:
         plot_color = 'tab:orange'
     if ci_color is None:
         ci_color = 'C0'
 
-    results_values = results_values.sort_index()
-    if results_values.index.has_duplicates:
-        # this occurs with degradation_year_on_year(multi_yoy=True). resample to daily mean
-        warnings.warn(
-            "Input `yoy_info['YoY_values']` appears to have multiple annual "
-            "slopes per day, which is the case if "
-            "degradation_year_on_year(multi_yoy=True). "
-            "Proceeding to plot with a daily mean which will average out the "
-            "time-series trend. Recommend re-running with "
-            "degradation_year_on_year(multi_yoy=False)."
-        )
-        roller = results_values.resample('D').mean().rolling(f'{rolling_days}d',
-                                                             min_periods=rolling_days//4,
-                                                             center=True)
-    else:
-        roller = results_values.rolling(f'{rolling_days}d', min_periods=rolling_days//4,
-                                        center=True)
-    # unfortunately it seems that you can't return multiple values in the rolling.apply() kernel.
-    # TODO: figure out some workaround to return both percentiles in a single pass
+    roller = results_values.rolling(f'{rolling_days}D',
+                                    min_periods=rolling_days // min_periods_divisor,
+                                    center=center)
+
     if include_ci:
         ci_lower = roller.apply(_bootstrap, kwargs={'percentile': 2.5, 'reps': 100}, raw=True)
         ci_upper = roller.apply(_bootstrap, kwargs={'percentile': 97.5, 'reps': 100}, raw=True)
+        ci_lower = ci_lower[~ci_lower.index.duplicated(keep='last')]
+        ci_upper = ci_upper[~ci_upper.index.duplicated(keep='last')]
+    rolling_median = roller.median()
+    rolling_median = rolling_median[~rolling_median.index.duplicated(keep='last')]
     if fig is None:
         fig, ax = plt.subplots()
     else:
         ax = fig.axes[0]
     if include_ci:
-        ax.fill_between(ci_lower.index,
-                        ci_lower, ci_upper, color=ci_color)
-    median = roller.median()
-    ax.plot(median.index,
-            median, color=plot_color, **kwargs)
+        ax.fill_between(ci_lower.index, ci_lower, ci_upper, color=ci_color)
+    ax.plot(rolling_median, color=plot_color, **kwargs)
     ax.axhline(results_values.median(), c='k', ls='--')
     plt.ylabel('Degradation trend (%/yr)')
     fig.autofmt_xdate()
