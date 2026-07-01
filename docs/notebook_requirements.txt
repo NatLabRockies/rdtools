@@ -3,7 +3,7 @@ argon2-cffi==23.1.0
 argon2-cffi-bindings==21.2.0
 backcall==0.2.0
 beautifulsoup4==4.12.3
-bleach==6.1.0
+bleach==6.4.0
 cffi==1.17.0
 colorama==0.4.6
 decorator==5.1.1
