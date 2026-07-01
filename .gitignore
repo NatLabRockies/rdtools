@@ -43,5 +43,8 @@ rdtools.egg-info*
 .pixi/*
 !.pixi/config.toml
 
+# Windows shortcuts (developer-local)
+*.lnk
+
 # ignore vscode settings
 .vscode/
