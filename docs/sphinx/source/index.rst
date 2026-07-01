@@ -54,7 +54,6 @@ The preferred method for degradation rate estimation is the year-on-year
 The YOY calculation yields a distribution of degradation rates, the
 central tendency of which is the most representative of the true
 degradation. We note that the workflow described above and implemented in
-degradation. We note that the workflow described above and implemented in
 :py:class:`.analysis_chains.TrendAnalysis` provides an estimate of degradation rate,
 not performance loss rate (PLR). PLR includes losses that are explicitly filtered
 out by the primary workflow (Deceglie 2023).
