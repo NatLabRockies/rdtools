@@ -46,7 +46,7 @@ dependencies = [
     "scipy >= 1.8.1",
     "h5py >= 3.7.0",
     "plotly >= 4.0.0",
-    "xgboost >= 1.7.0",
+    "xgboost >= 1.7.0.post0",
     "pvlib >= 0.13.1",
     "scikit-learn >= 1.1.3, != 1.6.0",
     "arch >= 5.6",
@@ -192,3 +192,4 @@ test = "pytest --cov=rdtools --cov-report=xml rdtools/test/"
 [tool.pixi.feature.dev.tasks]
 test = "pytest --cov=rdtools --cov-report=xml rdtools/test/"
 nbval = "pytest --nbval --nbval-sanitize-with docs/nbval_sanitization_rules.cfg docs/"
+check-deps = "python scripts/check_dependencies.py"
