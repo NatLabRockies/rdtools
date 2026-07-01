@@ -225,13 +225,23 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     calc_info : dict
 
         * `YoY_values` - pandas series of year on year slopes with integer index.
+          When ``multi_yoy=True`` the index is non-monotonic because multiple
+          overlapping annual slopes can share the same right-endpoint position.
         * `renormalizing_factor` - float of value used to recenter data
         * `exceedance_level` - the degradation rate that was outperformed with
           probability of `exceedance_prob`
         * `usage_of_points` - number of times each point in energy_normalized
           is used to calculate a degradation slope. 0: point is never used. 1:
           point is either used as a start or endpoint. 2: point is used as both
-          start and endpoint for an Rd calculation.
+          start and endpoint for an Rd calculation. With ``multi_yoy=True``,
+          values can be larger than 2 because each point participates in
+          multiple slopes.
+        * `YoY_times` - pandas DataFrame with columns ``dt_right``, ``dt_center``,
+          and ``dt_left`` giving, for each entry in ``YoY_values``, the
+          timestamps of the right endpoint, the midpoint, and the left endpoint
+          of the slope. This can be used to recover the original timestamp-
+          indexed behavior of ``YoY_values`` (for example,
+          ``calc_info['YoY_values'].set_axis(calc_info['YoY_times']['dt_right'])``).
     '''
 
     # Ensure the data is in order

@@ -1,14 +1,21 @@
 *************************
-v3.2.0 (X, X, 2026)
+v3.2.0 (July 01, 2026)
 *************************
 
 Enhancements
 ------------
 * :py:func:`~rdtools.degradation.degradation_year_on_year` has new parameter ``multi_yoy``
   (default False) to trigger multiple YoY degradation calculations similar to Hugo Quest et
-  al 2023. In this mode, instead of a series of 1-year duration slopes, 2-year, 3-year etc
+  al 2024 [1]_. In this mode, instead of a series of 1-year duration slopes, 2-year, 3-year etc
   slopes are also included.  calc_info['YoY_values'] returns a non-monotonic index
   in this mode due to multiple overlapping annual slopes.  (:issue:`394`)
+* :py:func:`~rdtools.degradation.degradation_year_on_year` ``calc_info['YoY_values']``
+  is now indexed by an integer position instead of by the right-endpoint timestamp.
+  This is required to support the new ``multi_yoy=True`` mode, where multiple
+  overlapping slopes can share the same right-endpoint timestamp.  The original
+  timestamp-indexed behavior can be reconstructed using the new
+  ``calc_info['YoY_times']`` DataFrame (for example,
+  ``calc_info['YoY_values'].set_axis(calc_info['YoY_times']['dt_right'])``). (:issue:`394`)
 * :py:func:`~rdtools.degradation.degradation_year_on_year` now returns
   ``calc_info['YoY_times']`` DataFrame with ``dt_right``, ``dt_center``, and ``dt_left``
   columns for each YoY slope.  (:issue:`459`)
@@ -38,6 +45,10 @@ Bug Fixes
 ---------
 * Fixed ``usage_of_points`` calculation in :py:func:`~rdtools.degradation.degradation_year_on_year`
   to properly handle ``multi_yoy=True`` mode with overlapping slopes.  (:issue:`394`)
+* In :py:func:`~rdtools.degradation.degradation_year_on_year`,
+  ``calc_info['usage_of_points']`` no longer contains ``NaN`` for points that
+  do not participate in any YoY slope; those entries are now filled with ``0``
+  to be consistent with the documented meaning of "0: point is never used." (:issue:`394`)
 
 Maintenance
 -----------
@@ -75,4 +86,13 @@ Contributors
 ------------
 * Chris Deline (:ghuser:`cdeline`)
 * Martin Springer (:ghuser:`martin-springer`)
+* Michael Deceglie (:ghuser:`mdeceglie`)
+
+
+References
+----------
+.. [1] H. Quest, C. Ballif, A. Virtuani, "Multi-Annual Year-on-Year: Minimising
+   the Uncertainty in Photovoltaic System Performance Loss Rates," Progress in
+   Photovoltaics: Research and Applications, vol. 33, no. 3, pp. 411-424,
+   Oct. 2024. `doi:10.1002/pip.3855 <https://doi.org/10.1002/pip.3855>`_
 
