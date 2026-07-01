@@ -1053,7 +1053,7 @@ class TrendAnalysis:
             Analyses to perform as a list of strings. Valid entries are 'yoy_degradation'
             and 'srr_soiling'
         yoy_kwargs : dict
-            kwargs to pass to :py:func:`rdtools.degradation.degradation_year_on_year`
+            kwargs to pass to :py:func:`rdtools.degradation.degradation_year_on_year`.
         srr_kwargs : dict
             kwargs to pass to :py:func:`rdtools.soiling.soiling_srr`
 
@@ -1248,7 +1248,7 @@ class TrendAnalysis:
         ax.set_ylabel("PV Energy (Wh/timestep)")
         return fig
 
-    def plot_degradation_timeseries(self, case, rolling_days=365, **kwargs):
+    def plot_degradation_timeseries(self, case, rolling_days=365, center=None, **kwargs):
         """
         Plot resampled time series of degradation trend with time
 
@@ -1257,8 +1257,17 @@ class TrendAnalysis:
         case: str
             The workflow result to plot, allowed values are 'sensor' and 'clearsky'
         rolling_days: int, default 365
-            Number of days for rolling window. Note that the window must contain
-            at least 50% of datapoints to be included in rolling plot.
+            Number of days for rolling window. The window must contain at least
+            ``rolling_days // min_periods_divisor`` datapoints to be included in
+            the rolling plot; see
+            :py:func:`rdtools.plotting.degradation_timeseries_plot` for details
+            on ``min_periods_divisor`` and its pending default change.
+        center : bool, default False
+            If ``True``, the rolling window is centered and results are reindexed
+            using center timestamps before any calculations are performed.
+            The recommended value is ``True``; the default of ``False`` is retained
+            only for backward compatibility. A warning is raised when this argument
+            is not explicitly supplied.
         kwargs :
             Extra parameters passed to :py:func:`rdtools.plotting.degradation_timeseries_plot`
 
@@ -1274,7 +1283,7 @@ class TrendAnalysis:
         else:
             raise ValueError("case must be either 'sensor' or 'clearsky'")
 
-        fig = plotting.degradation_timeseries_plot(yoy_info, rolling_days, **kwargs)
+        fig = plotting.degradation_timeseries_plot(yoy_info, rolling_days, center=center, **kwargs)
         return fig
 
 

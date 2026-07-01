@@ -179,7 +179,8 @@ def degradation_classical_decomposition(energy_normalized,
 
 def degradation_year_on_year(energy_normalized, recenter=True,
                              exceedance_prob=95, confidence_level=68.2,
-                             uncertainty_method='simple', block_length=30):
+                             uncertainty_method='simple', block_length=30,
+                             multi_yoy=False):
     '''
     Estimate the trend of a timeseries using the year-on-year decomposition
     approach and calculate a Monte Carlo-derived confidence interval of slope.
@@ -208,6 +209,11 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         If `uncertainty_method` is 'circular_block', `block_length`
         determines the length of the blocks used in the circular block bootstrapping
         in number of days. Must be shorter than a third of the time series.
+    multi_yoy : bool, default False
+        Whether to return the standard Year-on-Year slopes where each slope
+        is calculated over points separated by 365 days (default) or
+        multi_year-on-year where points can be separated by N * 365 days
+        where N is an integer from 1 to the length of the dataset in years.
 
     Returns
     -------
@@ -218,14 +224,24 @@ def degradation_year_on_year(energy_normalized, recenter=True,
         degradation rate estimate
     calc_info : dict
 
-        * `YoY_values` - pandas series of right-labeled year on year slopes
+        * `YoY_values` - pandas series of year on year slopes with integer index.
+          When ``multi_yoy=True`` the index is non-monotonic because multiple
+          overlapping annual slopes can share the same right-endpoint position.
         * `renormalizing_factor` - float of value used to recenter data
         * `exceedance_level` - the degradation rate that was outperformed with
           probability of `exceedance_prob`
         * `usage_of_points` - number of times each point in energy_normalized
           is used to calculate a degradation slope. 0: point is never used. 1:
           point is either used as a start or endpoint. 2: point is used as both
-          start and endpoint for an Rd calculation.
+          start and endpoint for an Rd calculation. With ``multi_yoy=True``,
+          values can be larger than 2 because each point participates in
+          multiple slopes.
+        * `YoY_times` - pandas DataFrame with columns ``dt_right``, ``dt_center``,
+          and ``dt_left`` giving, for each entry in ``YoY_values``, the
+          timestamps of the right endpoint, the midpoint, and the left endpoint
+          of the slope. This can be used to recover the original timestamp-
+          indexed behavior of ``YoY_values`` (for example,
+          ``calc_info['YoY_values'].set_axis(calc_info['YoY_times']['dt_right'])``).
     '''
 
     # Ensure the data is in order
@@ -269,37 +285,72 @@ def degradation_year_on_year(energy_normalized, recenter=True,
     energy_normalized = energy_normalized.reset_index()
     energy_normalized['energy'] = energy_normalized['energy'] / renorm
 
-    energy_normalized['dt_shifted'] = energy_normalized.dt + pd.DateOffset(years=1)
+    # dataframe container for combined year-over-year changes
+    df = pd.DataFrame()
+    if multi_yoy:
+        year_range = range(1, int((energy_normalized.iloc[-1]['dt'] -
+                                   energy_normalized.iloc[0]['dt']).days/365)+1)
+    else:
+        year_range = [1]
+    for y in year_range:
+        energy_normalized['dt_shifted'] = energy_normalized.dt + pd.DateOffset(years=y)
+        # Merge with what happened one year ago, use tolerance of 8 days to allow
+        # for weekly aggregated data
+        df_temp = pd.merge_asof(energy_normalized[['dt', 'energy']],
+                                energy_normalized.sort_values('dt_shifted'),
+                                left_on='dt', right_on='dt_shifted',
+                                suffixes=['', '_left'],
+                                tolerance=pd.Timedelta('8D')
+                                )
+        df = pd.concat([df, df_temp], ignore_index=True)
 
-    # Merge with what happened one year ago, use tolerance of 8 days to allow
-    # for weekly aggregated data
-    df = pd.merge_asof(energy_normalized[['dt', 'energy']],
-                       energy_normalized.sort_values('dt_shifted'),
-                       left_on='dt', right_on='dt_shifted',
-                       suffixes=['', '_right'],
-                       tolerance=pd.Timedelta('8D')
-                       )
-
-    df['time_diff_years'] = (df.dt - df.dt_right) / pd.Timedelta('365D')
-    df['yoy'] = 100.0 * (df.energy - df.energy_right) / (df.time_diff_years)
-    df.index = df.dt
+    df['time_diff_years'] = (df.dt - df.dt_left) / pd.Timedelta('365D')
+    df['yoy'] = 100.0 * (df.energy - df.energy_left) / (df.time_diff_years)
 
     yoy_result = df.yoy.dropna()
-
-    df_right = df.set_index(df.dt_right).drop_duplicates('dt_right')
-    df['usage_of_points'] = df.yoy.notnull().astype(int).add(
-                df_right.yoy.notnull().astype(int), fill_value=0)
 
     if not len(yoy_result):
         raise ValueError('no year-over-year aggregated data pairs found')
 
     Rd_pct = yoy_result.median()
 
+    YoY_times = df.dropna(subset=['yoy'], inplace=False).copy()
+
+    # calculate usage of points.
+    df_left = YoY_times.set_index(YoY_times.dt_left)  # .drop_duplicates('dt_left')
+    df_right = YoY_times.set_index(YoY_times.dt)  # .drop_duplicates('dt')
+    usage_of_points = df_right.yoy.notnull().astype(int).add(
+                df_left.yoy.notnull().astype(int),
+                fill_value=0).groupby(level=0).sum()
+    usage_of_points.name = 'usage_of_points'
+
+    pandas_version = pd.__version__.split(".")
+    if int(pandas_version[0]) < 2:
+        # For old Pandas versions < 2.0.0, time columns cannot be averaged
+        # with each other, so we use a custom function to calculate center label
+        YoY_times['dt_center'] = _avg_timestamp_old_Pandas(YoY_times['dt'], YoY_times['dt_left'])
+    else:
+        YoY_times['dt_center'] = pd.to_datetime(YoY_times[['dt', 'dt_left']].mean(axis=1))
+
+    YoY_times = YoY_times[['dt', 'dt_center', 'dt_left']]
+    YoY_times = YoY_times.rename(columns={'dt': 'dt_right'})
+
+    # apply integer index to the yoy_result; multi-YoY has duplicate timestamps.
+    yoy_result.index = YoY_times.index
+    yoy_result.index.name = 'dt'
+
+    # the following is throwing a futurewarning if infer_objects() isn't included here.
+    # see https://github.com/pandas-dev/pandas/issues/57734
+    energy_normalized = energy_normalized.merge(usage_of_points, how='left', left_on='dt',
+                                                right_index=True, left_index=False
+                                                ).infer_objects().fillna(0.0)
+
     if uncertainty_method == 'simple':  # If we need the full results
         calc_info = {
             'YoY_values': yoy_result,
             'renormalizing_factor': renorm,
-            'usage_of_points': df['usage_of_points']
+            'usage_of_points': energy_normalized.set_index('dt')['usage_of_points'],
+            'YoY_times': YoY_times[['dt_right', 'dt_center', 'dt_left']]
         }
 
         # bootstrap to determine 68% CI and exceedance probability
@@ -345,15 +396,77 @@ def degradation_year_on_year(energy_normalized, recenter=True,
 
         # Save calculation information
         calc_info = {
+            'YoY_values': yoy_result,
             'renormalizing_factor': renorm,
             'exceedance_level': exceedance_level,
-            'usage_of_points': df['usage_of_points'],
+            'usage_of_points': energy_normalized.set_index('dt')['usage_of_points'],
+            'YoY_times': YoY_times[['dt_right', 'dt_center', 'dt_left']],
             'bootstrap_rates': bootstrap_rates}
 
         return (Rd_pct, Rd_CI, calc_info)
 
     else:  # If we do not need confidence intervals and exceedance level
+        # TODO: Consider returning a tuple for consistency with other branches, e.g.:
+        # return (Rd_pct, None, {
+        #     'YoY_values': yoy_result,
+        #     'usage_of_points': energy_normalized.set_index('dt')['usage_of_points'],
+        #     'YoY_times': YoY_times[['dt_right', 'dt_center', 'dt_left']]}
+        # )
+        # Note: Current behavior intentionally returns only the scalar Rd_pct
+        # to maintain compatibility (see test_bootstrap_module).
         return Rd_pct
+
+
+def _avg_timestamp_old_Pandas(dt, dt_left):
+    '''
+    For old Pandas versions < 2.0.0, time columns cannot be averaged
+    together.  From https://stackoverflow.com/questions/57812300/
+    python-pandas-to-calculate-mean-of-datetime-of-multiple-columns
+
+    Parameters
+    ----------
+    dt : pandas.Series
+        First series with datetime values
+    dt_left : pandas.Series
+        Second series with datetime values.
+
+    Returns
+    -------
+    pandas.Series
+        Series with the average timestamp of df1 and df2.
+    '''
+    import calendar
+
+    # Remove timezone from datetime values for averaging
+    temp_df = pd.DataFrame(
+        {"dt": dt.dt.tz_localize(None), "dt_left": dt_left.dt.tz_localize(None)}
+    )
+
+    # conversion from dates to seconds since epoch (unix time)
+    def to_unix(s):
+        if isinstance(s, pd.Timestamp):
+            return calendar.timegm(s.timetuple())
+        else:
+            return pd.NaT
+
+    # sum the seconds since epoch, calculate average, and convert back to readable date
+    averages = []
+    for index, row in temp_df.iterrows():
+        unix = [to_unix(i) for i in row]
+        # unix = [pd.Timestamp(i).timestamp() for i in row]
+        try:
+            average = sum(unix) / len(unix)
+            # averages.append(datetime.datetime.utcfromtimestamp(average).strftime('%Y-%m-%d'))
+            averages.append(pd.to_datetime(average, unit='s'))
+        except TypeError:
+            averages.append(pd.NaT)
+    temp_df['averages'] = averages
+
+    dt_center = temp_df["averages"].dt.tz_localize(dt.dt.tz)
+    dt_center.index = dt.index
+    dt_center.name = "averages"
+
+    return dt_center
 
 
 def _mk_test(x, alpha=0.05):

@@ -13,7 +13,8 @@ jobs:
           'TrendAnalysis_example.ipynb',
           'TrendAnalysis_example_NSRDB.ipynb',
           'degradation_and_soiling_example.ipynb',
-          'system_availability_example.ipynb'
+          'system_availability_example.ipynb',
+          'Multi-year_on_year_example.ipynb'
         ]
 
     steps:
@@ -28,8 +29,8 @@ jobs:
         pip install --timeout=300 -r requirements.txt -r docs/notebook_requirements.txt .[test]
     - name: Run notebook and check output
       run: |
-        # --sanitize-with:  pre-process text to remove irrelevant differences (e.g. warning filepaths)
-        pytest --nbval docs/${{ matrix.notebook-file }} --sanitize-with docs/nbval_sanitization_rules.cfg
+        # --nbval-sanitize-with:  pre-process text to remove irrelevant differences (e.g. warning filepaths)
+        pytest --nbval --nbval-sanitize-with docs/nbval_sanitization_rules.cfg docs/${{ matrix.notebook-file }}
     - name: Run notebooks again, save files
       run: |
         pip install nbconvert[webpdf]
