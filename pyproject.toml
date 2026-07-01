@@ -192,3 +192,4 @@ test = "pytest --cov=rdtools --cov-report=xml rdtools/test/"
 [tool.pixi.feature.dev.tasks]
 test = "pytest --cov=rdtools --cov-report=xml rdtools/test/"
 nbval = "pytest --nbval --nbval-sanitize-with docs/nbval_sanitization_rules.cfg docs/"
+check-deps = "python scripts/check_dependencies.py"

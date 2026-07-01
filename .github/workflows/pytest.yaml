@@ -9,6 +9,29 @@ on:
 
 
 jobs:
+  check-deps:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: prefix-dev/setup-pixi@v0.8.3
+      with:
+        run-install: false
+    - name: Verify pixi.lock is in sync with pyproject.toml
+      run: |
+        if ! pixi install --locked --environment dev; then
+          echo ""
+          echo "::error title=pixi.lock out of sync::pixi.lock does not match pyproject.toml."
+          echo ""
+          echo "To fix, run 'pixi install' locally and commit the updated pixi.lock:"
+          echo ""
+          echo "    pixi install"
+          echo "    git add pixi.lock"
+          echo "    git commit -m 'Update pixi.lock'"
+          exit 1
+        fi
+    - name: Verify min-feature pins match project.dependencies lower bounds
+      run: pixi run -e dev check-deps
+
   validate-envs:
     runs-on: ubuntu-latest
     steps:

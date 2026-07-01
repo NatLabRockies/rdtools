@@ -34,6 +34,10 @@ Maintenance
   ``[doc]``, and ``[all]``. (:pull:`493`)
 * Updated documentation (README, Sphinx index, developer notes, and example
   notebook setup cells) for pixi and pip extras. (:pull:`493`)
+* Added a ``check-deps`` pixi task and matching CI job that verifies
+  ``[tool.pixi.feature.min.pypi-dependencies]`` stays in sync with the lower
+  bounds in ``[project.dependencies]`` and that ``pixi.lock`` is up to date
+  with ``pyproject.toml``. (:pull:`497`)
 
 Bug Fixes
 ---------
