@@ -9,7 +9,7 @@ Bug Fixes
   paired with Feb 28 of the other year, and a leap day with no leap day in
   the year before is no longer paired with a Feb 28 point that is already
   used. Results change slightly for data that include a leap day, including
-  results of :py:class:`~rdtools.soiling.CODSAnalysis`. (:issue:`283`)
+  results of :py:class:`~rdtools.soiling.CODSAnalysis`. (:issue:`283`, :pull:`521`)
 
 Contributors
 ------------
