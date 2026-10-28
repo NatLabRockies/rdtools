@@ -358,6 +358,28 @@ def test_yoy_no_pairs_found():
         degradation_year_on_year(series)
 
 
+def test_yoy_leap_day_usage():
+    """A point next to a leap day is used in one forward and one backward
+    YoY slope only (GH #283)."""
+    idx = pd.date_range("2014-01-01", "2017-12-31", freq="D")
+    series = pd.Series(1.0, index=idx)
+    series.loc["2015-02-28"] = 0  # outlier one year before the 2016 leap day
+    _, _, calc_info = degradation_year_on_year(series)
+    yoy = calc_info["YoY_values"]
+    assert (yoy < -50).sum() == 1
+    assert (yoy > 50).sum() == 1
+    assert calc_info["usage_of_points"].max() == 2
+
+
+def test_yoy_leap_day_pairing():
+    """Feb 28 is paired with Feb 28 of the year before, not with Feb 29."""
+    idx = pd.date_range("2014-01-01", "2017-12-31", freq="D")
+    series = pd.Series(1.0, index=idx)
+    _, _, calc_info = degradation_year_on_year(series)
+    times = calc_info["YoY_times"].set_index("dt_right")
+    assert times.loc["2017-02-28", "dt_left"] == pd.Timestamp("2016-02-28")
+
+
 def test_mk_test_no_trend():
     """Test Mann-Kendall test with no trend (z == 0 case)."""
     from rdtools.degradation import _mk_test
