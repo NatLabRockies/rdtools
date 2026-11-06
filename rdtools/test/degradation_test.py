@@ -380,6 +380,23 @@ def test_yoy_leap_day_pairing():
     assert times.loc["2017-02-28", "dt_left"] == pd.Timestamp("2016-02-28")
 
 
+def test_multi_yoy_preserves_exact_leap_day_match():
+    """With multi_yoy, the four-year pair Feb 29 to Feb 29 is kept even if the
+    day after the earlier leap day is missing."""
+    index = pd.date_range("2016-01-01", "2020-03-02", freq="D")
+    index = index.drop(pd.Timestamp("2016-03-01"))
+    energy = pd.Series(1.0, index=index)
+    _, _, calc_info = degradation_year_on_year(energy, multi_yoy=True)
+    pairs = calc_info["YoY_times"]
+
+    exact_match = (
+        (pairs["dt_left"] == pd.Timestamp("2016-02-29"))
+        & (pairs["dt_right"] == pd.Timestamp("2020-02-29"))
+    )
+
+    assert exact_match.sum() == 1
+
+
 def test_mk_test_no_trend():
     """Test Mann-Kendall test with no trend (z == 0 case)."""
     from rdtools.degradation import _mk_test

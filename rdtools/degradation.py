@@ -310,8 +310,9 @@ def degradation_year_on_year(energy_normalized, recenter=True,
                                 )
         # A leap day with no leap day y years earlier is matched to the same
         # Feb 28 point as Feb 28. Drop the leap day pair so that the point is
-        # not used twice.
-        leap_day = (df_temp['dt'].dt.month == 2) & (df_temp['dt'].dt.day == 29)
+        # not used twice. An exact Feb 29 to Feb 29 pair is always kept.
+        leap_day = ((df_temp['dt'].dt.month == 2) & (df_temp['dt'].dt.day == 29)
+                    & (df_temp['dt'] != df_temp['dt_shifted']))
         df_temp = df_temp[~(leap_day & df_temp.dt_left.duplicated(keep=False))]
         df = pd.concat([df, df_temp], ignore_index=True)
 
