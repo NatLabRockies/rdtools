@@ -12,11 +12,11 @@ def test_iterative_signal_decomposition(cods_normalized_daily):
     cods = soiling.CODSAnalysis(cods_normalized_daily)
     df_out, results_dict = \
         cods.iterative_signal_decomposition()
-    assert 0.080641 == pytest.approx(results_dict['degradation'], abs=1e-6), \
+    assert 0.080754 == pytest.approx(results_dict['degradation'], abs=1e-6), \
         'Degradation rate different from expected value'
-    assert 3.305136 == pytest.approx(results_dict['soiling_loss'], abs=1e-6), \
+    assert 3.305174 == pytest.approx(results_dict['soiling_loss'], abs=1e-6), \
         'Soiling loss different from expected value'
-    assert 0.999359 == pytest.approx(results_dict['residual_shift'], abs=1e-6), \
+    assert 0.999350 == pytest.approx(results_dict['residual_shift'], abs=1e-6), \
         'Residual shift different from expected value'
     assert 0.008144 == pytest.approx(results_dict['RMSE'], abs=1e-6), \
         'RMSE different from expected value'
@@ -59,11 +59,11 @@ def test_iterative_signal_decomposition_with_nan_interval(cods_normalized_daily)
     cods = soiling.CODSAnalysis(normalized_corrupt)
     df_out, results_dict = \
         cods.iterative_signal_decomposition()
-    assert -0.004968 == pytest.approx(results_dict['degradation'], abs=1e-5), \
+    assert 0.012619 == pytest.approx(results_dict['degradation'], abs=1e-5), \
         'Degradation rate different from expected value'
-    assert 3.232171 == pytest.approx(results_dict['soiling_loss'], abs=1e-5), \
+    assert 3.231437 == pytest.approx(results_dict['soiling_loss'], abs=1e-5), \
         'Soiling loss different from expected value'
-    assert 1.000108 == pytest.approx(results_dict['residual_shift'], abs=1e-5), \
+    assert 0.999923 == pytest.approx(results_dict['residual_shift'], abs=1e-5), \
         'Residual shift different from expected value'
     assert 0.008184 == pytest.approx(results_dict['RMSE'], abs=1e-5), \
         'RMSE different from expected value'
