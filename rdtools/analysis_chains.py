@@ -756,10 +756,10 @@ class TrendAnalysis:
         """
 
         if post_filter.empty:
-            post_filter_length = pd.Timedelta("0d")
+            post_filter_length = pd.Timedelta("0D")
         else:
             post_filter_length = post_filter.index[-1] - post_filter.index[0]
-        if post_filter_length < pd.Timedelta("730d"):
+        if post_filter_length < pd.Timedelta("730D"):
             raise ValueError("Less than two years of data left after filtering")
 
     def _aggregate(self, energy_normalized, insolation):

@@ -996,7 +996,7 @@ def insolation_filter(insolation, quantile=0.1):
     return mask
 
 
-def hampel_filter(series, k="14d", t0=3):
+def hampel_filter(series, k="14D", t0=3):
     """
     Hampel outlier designed for use after the aggregation step
     in the RdTools trend analysis workflows, but broadly
@@ -1006,8 +1006,8 @@ def hampel_filter(series, k="14d", t0=3):
     ----------
     series : pandas.Series
         daily normalized time series
-    k : int or time offset string e.g. 'd', default 14d
-        size of window including the sample; 14d is equal to 7 days on either
+    k : int or time offset string e.g. 'D', default 14D
+        size of window including the sample; 14D is equal to 7 days on either
         side of value
     t0 : int, default 3
         Threshold value, defaults to 3 sigma Pearson's rule.

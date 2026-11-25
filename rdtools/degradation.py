@@ -39,7 +39,7 @@ def degradation_ols(energy_normalized, confidence_level=68.2):
 
     # calculate a years column as x value for regression, ignoring leap years
     day_diffs = (df.index - df.index[0])
-    df['days'] = day_diffs / pd.Timedelta('1d')
+    df['days'] = day_diffs / pd.Timedelta('1D')
     df['years'] = df.days / 365.0
 
     # add intercept-constant to the exogeneous variable
@@ -124,12 +124,12 @@ def degradation_classical_decomposition(energy_normalized,
 
     # calculate a years column as x value for regression, ignoring leap years
     day_diffs = (df.index - df.index[0])
-    df['days'] = day_diffs / pd.Timedelta('1d')
+    df['days'] = day_diffs / pd.Timedelta('1D')
     df['years'] = df.days / 365.0
 
     # Compute yearly rolling mean to isolate trend component using
     # moving average
-    energy_ma = df['energy_normalized'].rolling('365d', center=True).mean()
+    energy_ma = df['energy_normalized'].rolling('365D', center=True).mean()
     has_full_year = (df["years"] >= df["years"].iloc[0] + 0.5) & (
         df["years"] <= df["years"].iloc[-1] - 0.5
     )
