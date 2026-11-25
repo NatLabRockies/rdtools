@@ -14,6 +14,8 @@ Testing
 * ``test_avg_timestamp_old_Pandas`` takes the expected datetime resolution
   from ``pd.to_datetime(..., unit='s')``, which returns microseconds from
   pandas 3.1. (:pull:`522`)
+* Added a test for :py:class:`~rdtools.analysis_chains.TrendAnalysis` when
+  the aggregated ``ad_hoc_filter`` removes all data. (:pull:`522`)
 
 Contributors
 ------------
