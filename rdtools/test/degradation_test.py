@@ -212,12 +212,11 @@ class DegradationTestCase(unittest.TestCase):
         dt_right = pd.Series(self.get_corr_energy(0, 'D').index[-3:].tz_localize('UTC') +
                              pd.Timedelta(days=365),
                              index=self.get_corr_energy(0, 'D').index[-3:].tz_localize('UTC'))
-        # Expected dtype depends on pandas version (ns for <3.0, s for >=3.0)
-        pandas_version = pd.__version__.split(".")
-        if int(pandas_version[0]) < 3:
-            expected_dtype = "datetime64[ns, UTC]"
-        else:
-            expected_dtype = "datetime64[s, UTC]"
+        # The function converts back with pd.to_datetime(..., unit='s'), whose
+        # resolution depends on the pandas version (ns before 3.0, s in 3.0,
+        # us from 3.1), so take the expected unit from the same conversion.
+        unit, _ = np.datetime_data(pd.to_datetime(0.0, unit='s').to_datetime64().dtype)
+        expected_dtype = f"datetime64[{unit}, UTC]"
         # Expected result is the midpoint between each pair
         expected = pd.Series(
             [

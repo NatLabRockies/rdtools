@@ -331,6 +331,18 @@ def test_sensor_analysis_aggregated_ad_hoc_filter(sensor_parameters):
         rd_analysis.sensor_analysis(analyses=["yoy_degradation"])
 
 
+def test_sensor_analysis_aggregated_ad_hoc_filter_removes_all(sensor_parameters):
+    # excluding every point leaves no data at all after filtering
+    filt = pd.Series(False, index=sensor_parameters["pv"].index)
+    filt = filt.resample("1D").first().dropna(how="all")
+    rd_analysis = TrendAnalysis(**sensor_parameters, power_dc_rated=1.0)
+    rd_analysis.filter_params_aggregated["ad_hoc_filter"] = filt
+    with pytest.raises(
+        ValueError, match="Less than two years of data left after filtering"
+    ):
+        rd_analysis.sensor_analysis(analyses=["yoy_degradation"])
+
+
 def test_filter_components_poa(sensor_parameters):
     poa = sensor_parameters["poa_global"]
     poa_filter = (poa > 200) & (poa < 1200)

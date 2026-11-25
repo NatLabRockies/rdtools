@@ -150,7 +150,7 @@ class SRRAnalysis():
 
         # Recenter to median of first year, as in YoY degradation
         if recenter:
-            oneyear = start + pd.Timedelta('364d')
+            oneyear = start + pd.Timedelta('364D')
             renorm = df.loc[start:oneyear, 'pi'].median()
         else:
             renorm = 1
