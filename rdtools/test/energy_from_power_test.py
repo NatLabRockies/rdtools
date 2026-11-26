@@ -28,6 +28,29 @@ def test_energy_from_power_instantaneous(power):
     pd.testing.assert_series_equal(result, expected)
 
 
+@pytest.mark.parametrize("last_power, expected_last_energy", [(120.0, 30.0), (np.nan, np.nan)])
+def test_energy_from_power_instantaneous_does_not_extrapolate(last_power, expected_last_energy):
+    times = pd.date_range("2024-01-01 00:00", periods=4, freq="15min")
+    power = pd.Series([120.0, 120.0, 120.0, last_power], index=times)
+    labels = pd.date_range("2024-01-01 00:30", periods=2, freq="30min")
+    expected = pd.Series([60.0, expected_last_energy], index=labels, name="energy_Wh")
+
+    result = energy_from_power(power, target_frequency="30min", power_type="instantaneous")
+
+    pd.testing.assert_series_equal(result, expected)
+
+
+def test_energy_from_power_instantaneous_interpolates_inside_measurements():
+    times = pd.date_range("2024-01-01 00:00", periods=4, freq="15min")
+    power = pd.Series([0.0, 60.0, 120.0, 180.0], index=times)
+    labels = pd.date_range("2024-01-01 00:20", periods=3, freq="20min")
+    expected = pd.Series([40 / 3, 40.0, 85 / 6], index=labels, name="energy_Wh")
+
+    result = energy_from_power(power, target_frequency="20min", power_type="instantaneous")
+
+    pd.testing.assert_series_equal(result, expected)
+
+
 def test_energy_from_power_max_timedelta_inference(power):
     expected = power.iloc[1:] * 0.25
     expected.name = "energy_Wh"

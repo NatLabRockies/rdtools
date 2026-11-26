@@ -344,8 +344,9 @@ def energy_from_power(power, target_frequency=None, max_timedelta=None,
     '''
     Returns a regular right-labeled energy time series in units of Wh per
     interval from a power time series. For instantaneous timeseries, a
-    trapezoidal sum is used. For right labeled time series, a rectangular sum
-    is used. NaN is filled where the gap between input data points exceeds
+    trapezoidal sum is used without extrapolating beyond valid measurements.
+    For right labeled time series, a rectangular sum is used.
+    NaN is filled where the gap between input data points exceeds
     ``max_timedelta``. Power_series should
     be given in Watts.
 
@@ -501,7 +502,7 @@ def _aggregate(time_series, target_frequency, max_timedelta, series_type):
     t_diffs_hours = pd.Series(time_series.index).diff().dt.total_seconds().values[1:] / 3600.0
     if series_type == 'instantaneous':
         # interpolate with trapz sum
-        time_series = time_series.interpolate(method='time')
+        time_series = time_series.interpolate(method='time', limit_area='inside')
         time_series[gap_mask] = np.nan
         values = time_series.values
         series_sum = (values[1:] + values[:-1]) / 2 * t_diffs_hours
